@@ -1,9 +1,8 @@
 package data;
 
 import java.util.List;
-
-import fastq.Read;
+import java.util.BitSet;
 
 public interface DataStructure{
-    public List<Read> removeNear(Read r, int k);
+    public List<BitSet> removeNear(BitSet umi, int k);
 }
