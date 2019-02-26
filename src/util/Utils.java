@@ -28,4 +28,25 @@ public class Utils{
 
         return a;
     }
+
+    public static BitSet toBitSet(String s){
+        BitSet res = new BitSet();
+
+        for(int i = 0; i < s.length(); i++){
+            charSet(res, i, Read.ENCODING_MAP.get(s.charAt(i)));
+        }
+
+        return res;
+    }
+
+    // converts quality string to byte array, using the Phred+33 format
+    public static byte[] toPhred33ByteArray(String q){
+        byte[] res = new byte[q.length()];
+
+        for(int i = 0; i < q.length(); i++){
+            res[i] = (byte)(q.charAt(i) - '!');
+        }
+
+        return res;
+    }
 }

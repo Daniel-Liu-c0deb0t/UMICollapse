@@ -3,6 +3,9 @@ package fastq;
 import java.util.Map;
 import java.util.HashMap;
 
+import static util.Utils.toBitSet;
+import static util.Utils.toPhred33ByteArray;
+
 public class Read{
     public static final int ENCODING_DIST = 2;
     public static final int ENCODING_LENGTH = 3;
@@ -17,10 +20,14 @@ public class Read{
 
     public String desc;
     public BitSet umi;
-    public BitSet read;
+    public BitSet seq;
     public byte[] qual;
 
-    public Read(String desc, String read, String qual, int umiLength){
-
+    public Read(String desc, String seq, String qual, int umiLength){
+        this.desc = desc.substring(1);
+        seq = seq.toUpperCase();
+        this.umi = toBitSet(seq.substring(0, umiLength));
+        this.seq = toBitSet(seq.substring(umiLength + 1));
+        this.qual = toPhred33ByteArray(qual);
     }
 }
