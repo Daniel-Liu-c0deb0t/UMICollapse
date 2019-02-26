@@ -2,6 +2,7 @@ package fastq;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.BitSet;
 
 import static util.Utils.toBitSet;
 import static util.Utils.toPhred33ByteArray;
@@ -9,7 +10,7 @@ import static util.Utils.toPhred33ByteArray;
 public class Read{
     public static final int ENCODING_DIST = 2;
     public static final int ENCODING_LENGTH = 3;
-    public static final Map<Character, BitSet> ENCODING_MAP = new HashMap<>();
+    public static final Map<Character, Integer> ENCODING_MAP = new HashMap<>();
 
     static{
         ENCODING_MAP.put('A', 0b000);

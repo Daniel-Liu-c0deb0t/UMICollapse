@@ -34,7 +34,7 @@ public class Combo implements DataStructure{
 
         if(idx >= umiLength){
             if(s.contains(curr)){
-                res.add(curr.clone());
+                res.add((BitSet)curr.clone());
                 s.remove(curr);
             }
 

@@ -7,7 +7,8 @@ import fastq.Read;
 public class Utils{
     // fast Hamming distance by using pairwise equidistant encodings for each nucleotide
     public static int umiDist(BitSet a, BitSet b){
-        BitSet c = a.xor(b);
+        BitSet c = (BitSet)a.clone();
+        a.xor(b);
         // divide by the pairwise Hamming distance in the encoding
         return c.cardinality() / Read.ENCODING_DIST;
     }

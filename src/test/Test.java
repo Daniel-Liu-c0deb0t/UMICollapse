@@ -2,6 +2,7 @@ package test;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.BitSet;
 
 import fastq.Read;
 import data.Naive;
@@ -14,7 +15,7 @@ public class Test{
         Set<BitSet> s = new HashSet<>();
         s.add(r.umi);
 
-        Naive n = new Naive(s);
+        Naive n = new Naive(s, 4);
 
         Combo c = new Combo(s, 4);
     }
