@@ -36,6 +36,8 @@ public class Utils{
             if(a.get(idx * Read.ENCODING_LENGTH + i))
                 res |= 1 << i;
         }
+
+        return res;
     }
 
     public static BitSet toBitSet(String s){

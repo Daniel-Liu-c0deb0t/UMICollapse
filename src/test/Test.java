@@ -7,6 +7,7 @@ import java.util.BitSet;
 import fastq.Read;
 import data.Naive;
 import data.Combo;
+import data.Trie;
 
 public class Test{
     public static void main(String[] args){
@@ -18,5 +19,7 @@ public class Test{
         Naive n = new Naive(s, 4);
 
         Combo c = new Combo(s, 4);
+
+        Trie t = new Trie(s, 4);
     }
 }

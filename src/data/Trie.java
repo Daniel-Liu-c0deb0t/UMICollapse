@@ -9,8 +9,9 @@ import java.util.BitSet;
 import fastq.Read;
 import static util.Utils.charGet;
 import static util.Utils.charSet;
+import static util.Utils.charEquals;
 
-public class Trie{
+public class Trie implements DataStructure{
     private int umiLength;
     private Node root;
 
@@ -42,8 +43,10 @@ public class Trie{
 
         boolean exists = false;
 
-        for(int c : ENCODING_IDX.keySet()){
-            if(!currNode.exists(ENCODING_IDX.get(c)))
+        for(int c : Read.ENCODING_IDX.keySet()){
+            int i = Read.ENCODING_IDX.get(c);
+
+            if(!currNode.exists(i))
                 continue;
 
             if(charEquals(umi, idx, c))
@@ -76,7 +79,7 @@ public class Trie{
         }
 
         Node ensureCreated(int idx){
-            if(c = null)
+            if(c == null)
                 c = new Node[Read.ENCODING_MAP.size()];
 
             if(c[idx] == null)
