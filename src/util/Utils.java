@@ -23,19 +23,26 @@ public class Utils{
     }
 
     public static BitSet charSet(BitSet a, int idx, int b){
-        for(int i = 0; i < Read.ENCODING_LENGTH; i++){
+        for(int i = 0; i < Read.ENCODING_LENGTH; i++)
             a.set(idx * Read.ENCODING_LENGTH + i, ((b & (1 << i)) != 0));
-        }
 
         return a;
+    }
+
+    public static int charGet(BitSet a, int idx){
+        int res = 0;
+
+        for(int i = 0; i < Read.ENCODING_LENGTH; i++){
+            if(a.get(idx * Read.ENCODING_LENGTH + i))
+                res |= 1 << i;
+        }
     }
 
     public static BitSet toBitSet(String s){
         BitSet res = new BitSet();
 
-        for(int i = 0; i < s.length(); i++){
+        for(int i = 0; i < s.length(); i++)
             charSet(res, i, Read.ENCODING_MAP.get(s.charAt(i)));
-        }
 
         return res;
     }
@@ -44,9 +51,8 @@ public class Utils{
     public static byte[] toPhred33ByteArray(String q){
         byte[] res = new byte[q.length()];
 
-        for(int i = 0; i < q.length(); i++){
+        for(int i = 0; i < q.length(); i++)
             res[i] = (byte)(q.charAt(i) - '!');
-        }
 
         return res;
     }

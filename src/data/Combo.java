@@ -22,15 +22,13 @@ public class Combo implements DataStructure{
     @Override
     public List<BitSet> removeNear(BitSet umi, int k){
         List<BitSet> res = new ArrayList<>();
-        BitSet curr = new BitSet();
-        recursiveRemoveNear(umi, 0, k, curr, res);
+        recursiveRemoveNear(umi, 0, k, new BitSet(), res);
         return res;
     }
 
     private void recursiveRemoveNear(BitSet umi, int idx, int k, BitSet curr, List<BitSet> res){
-        if(k < 0){
+        if(k < 0)
             return;
-        }
 
         if(idx >= umiLength){
             if(s.contains(curr)){
@@ -41,11 +39,11 @@ public class Combo implements DataStructure{
             return;
         }
 
-        for(int v : Read.ENCODING_MAP.values()){
-            if(charEquals(umi, idx, v)){
-                recursiveRemoveNear(umi, idx + 1, k, charSet(curr, idx, v), res);
+        for(int c : Read.ENCODING_IDX.keySet()){
+            if(charEquals(umi, idx, c)){
+                recursiveRemoveNear(umi, idx + 1, k, charSet(curr, idx, c), res);
             }else{
-                recursiveRemoveNear(umi, idx + 1, k - 1, charSet(curr, idx, v), res);
+                recursiveRemoveNear(umi, idx + 1, k - 1, charSet(curr, idx, c), res);
             }
         }
     }
