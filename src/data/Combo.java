@@ -40,11 +40,10 @@ public class Combo implements DataStructure{
         }
 
         for(int c : Read.ENCODING_IDX.keySet()){
-            if(charEquals(umi, idx, c)){
+            if(charEquals(umi, idx, c))
                 recursiveRemoveNear(umi, idx + 1, k, charSet(curr, idx, c), res);
-            }else{
+            else
                 recursiveRemoveNear(umi, idx + 1, k - 1, charSet(curr, idx, c), res);
-            }
         }
     }
 }

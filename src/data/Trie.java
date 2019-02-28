@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Map;
 
 import fastq.Read;
 import static util.Utils.charGet;
@@ -43,8 +44,9 @@ public class Trie implements DataStructure{
 
         boolean exists = false;
 
-        for(int c : Read.ENCODING_IDX.keySet()){
-            int i = Read.ENCODING_IDX.get(c);
+        for(Map.Entry<Integer, Integer> e : Read.ENCODING_IDX.entrySet()){
+            int c = e.getKey();
+            int i = e.getValue();
 
             if(!currNode.exists(i))
                 continue;
