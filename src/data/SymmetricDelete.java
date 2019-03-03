@@ -37,26 +37,43 @@ public class SymmetricDelete implements DataStructure{
     // k <= maxEdits must be satisfied
     @Override
     public List<BitSet> removeNear(BitSet umi, int k){
+        int diff = maxEdits - k;
+        int minMatch = 1;
+
+        for(int i = 0; i < diff; i++)
+            minMatch *= umiLength - k - i;
+
+        for(int i = 1; i < diff; i++)
+            minMatch /= i + 1;
+
         BitSet b = new BitSet();
-        Set<Integer> resIdx = new HashSet<>();
+        Map<Integer, Integer> resCount = new HashMap<>();
 
         for(int i = 0; i <= maxEdits; i++)
-            recursiveRemoveNear(umi, i, maxEdits - i, b, 0, resIdx);
+            recursiveRemoveNear(umi, i, maxEdits - i, b, 0, resCount);
 
         List<BitSet> res = new ArrayList<>();
 
-        for(int i : resIdx){
-            if(!removed.get(i) && umiDist(arr[i], umi) <= k)
-                res.add(arr[i]);
+        for(Map.Entry<Integer, Integer> e : resCount.entrySet()){
+            if(e.getValue() >= minMatch){
+                int idx = e.getKey();
+
+                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k){
+                    res.add(arr[idx]);
+                    removed.set(idx);
+                }
+            }
         }
 
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, int currK, BitSet curr, int currIdx, Set<Integer> resIdx){
+    private void recursiveRemoveNear(BitSet umi, int idx, int currK, BitSet curr, int currIdx, Map<Integer, Integer> resCount){
         if(currIdx >= umiLength - maxEdits){
-            if(m.containsKey(curr))
-                resIdx.addAll(m.get(curr));
+            if(m.containsKey(curr)){
+                for(Integer i : m.get(curr))
+                    resCount.put(i, resCount.getOrDefault(i, 0) + 1);
+            }
 
             return;
         }
@@ -64,7 +81,7 @@ public class SymmetricDelete implements DataStructure{
         charSet(curr, currIdx, charGet(umi, idx));
 
         for(int i = 0; i <= currK; i++)
-            recursiveRemoveNear(umi, idx + 1 + i, currK - i, curr, currIdx + 1, resIdx);
+            recursiveRemoveNear(umi, idx + 1 + i, currK - i, curr, currIdx + 1, resCount);
     }
 
     private void insert(BitSet umi, int idx){

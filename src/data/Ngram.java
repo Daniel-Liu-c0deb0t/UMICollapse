@@ -69,13 +69,9 @@ public class Ngram implements DataStructure{
             if(e.getValue() >= minMatch){
                 int idx = e.getKey();
 
-                if(!removed.get(idx)){
-                    BitSet o = arr[idx];
-
-                    if(umiDist(umi, o) <= k){
-                        res.add(o);
-                        removed.set(idx);
-                    }
+                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k){
+                    res.add(arr[idx]);
+                    removed.set(idx);
                 }
             }
         }
