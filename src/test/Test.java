@@ -10,6 +10,7 @@ import data.Combo;
 import data.Trie;
 import data.BKTree;
 import data.Ngram;
+import data.SymmetricDelete;
 
 public class Test{
     public static void main(String[] args){
@@ -27,5 +28,7 @@ public class Test{
         BKTree b = new BKTree(s, 4);
 
         Ngram g = new Ngram(s, 4, 1);
+
+        SymmetricDelete d = new SymmetricDelete(s, 4, 1);
     }
 }

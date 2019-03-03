@@ -59,8 +59,10 @@ public class Ngram implements DataStructure{
 
             in.setHash(hash);
 
-            for(Integer j : m.get(in))
-                count.put(j, count.getOrDefault(j, 0) + 1);
+            if(m.containsKey(in)){
+                for(Integer j : m.get(in))
+                    count.put(j, count.getOrDefault(j, 0) + 1);
+            }
         }
 
         for(Map.Entry<Integer, Integer> e : count.entrySet()){
@@ -69,6 +71,7 @@ public class Ngram implements DataStructure{
 
                 if(!removed.get(idx)){
                     BitSet o = arr[idx];
+
                     if(umiDist(umi, o) <= k){
                         res.add(o);
                         removed.set(idx);
