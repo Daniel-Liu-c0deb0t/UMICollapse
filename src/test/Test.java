@@ -9,6 +9,7 @@ import data.Naive;
 import data.Combo;
 import data.Trie;
 import data.BKTree;
+import data.Ngram;
 
 public class Test{
     public static void main(String[] args){
@@ -24,5 +25,7 @@ public class Test{
         Trie t = new Trie(s, 4);
 
         BKTree b = new BKTree(s, 4);
+
+        Ngram g = new Ngram(s, 4, 1);
     }
 }

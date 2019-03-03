@@ -5,6 +5,8 @@ import java.util.BitSet;
 import fastq.Read;
 
 public class Utils{
+    public static final int HASH_CONST = 31;
+
     // fast Hamming distance by using pairwise equidistant encodings for each nucleotide
     public static int umiDist(BitSet a, BitSet b){
         BitSet c = (BitSet)a.clone();
