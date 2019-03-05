@@ -1,6 +1,6 @@
 package merge;
 
-import fastq.Read;
+import util.Read;
 
 public class AnyMerge implements Merge{
     @Override

@@ -9,10 +9,13 @@ import java.util.BitSet;
 import static util.Utils.umiDist;
 
 public class BKTree implements DataStructure{
+    private Set<Bitset> s;
     private int umiLength;
     private Node root;
 
-    public BKTree(Set<BitSet> s, int umiLength){
+    @Override
+    public void init(Set<BitSet> s, int umiLength, int maxEdits){
+        this.s = new HashSet<BitSet>(s);
         this.umiLength = umiLength;
 
         boolean first = true;
@@ -40,6 +43,7 @@ public class BKTree implements DataStructure{
         if(dist <= k && curr.exists()){
             res.add(curr.getUMI());
             curr.setExists(false);
+            s.remove(curr.getUMI());
         }
 
         int lo = Math.max(dist - k, 0);
@@ -52,7 +56,7 @@ public class BKTree implements DataStructure{
             recursiveRemoveNear(umi, curr.get(i), k, res);
         }
 
-        if(!curr.childSubtreeExists())
+        if(!curr.exists() && !curr.childSubtreeExists())
             curr.setSubtreeExists(false);
     }
 
@@ -63,6 +67,11 @@ public class BKTree implements DataStructure{
         do{
             dist = umiDist(umi, curr.getUMI());
         }while((curr = curr.initNode(dist, umi, umiLength)) != null);
+    }
+
+    @Override
+    public boolean contains(BitSet umi){
+        return s.contains(umi);
     }
 
     private static class Node{

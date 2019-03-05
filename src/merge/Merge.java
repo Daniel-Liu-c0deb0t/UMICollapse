@@ -1,6 +1,6 @@
 package merge;
 
-import fastq.Read;
+import util.Read;
 
 public interface Merge{
     public Read merge(Read a, Read b);

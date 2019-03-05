@@ -12,7 +12,8 @@ import java.util.Iterator;
 public class Naive implements DataStructure{
     private Set<BitSet> s;
 
-    public Naive(Set<BitSet> s, int umiLength){
+    @Override
+    public void init(Set<BitSet> s, int umiLength, int maxEdits){
         this.s = new HashSet<BitSet>(s);
     }
 
@@ -30,5 +31,10 @@ public class Naive implements DataStructure{
         }
 
         return res;
+    }
+
+    @Override
+    public boolean contains(BitSet umi){
+        return s.contains(umi);
     }
 }

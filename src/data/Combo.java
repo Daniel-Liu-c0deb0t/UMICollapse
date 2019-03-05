@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-import fastq.Read;
+import util.Read;
 import static util.Utils.charSet;
 import static util.Utils.charEquals;
 
@@ -14,7 +14,8 @@ public class Combo implements DataStructure{
     private Set<BitSet> s;
     private int umiLength;
 
-    public Combo(Set<BitSet> s, int umiLength){
+    @Override
+    public void init(Set<BitSet> s, int umiLength, int maxEdits){
         this.s = new HashSet<BitSet>(s);
         this.umiLength = umiLength;
     }
@@ -45,5 +46,10 @@ public class Combo implements DataStructure{
             else
                 recursiveRemoveNear(umi, idx + 1, k - 1, charSet(curr, idx, c), res);
         }
+    }
+
+    @Override
+    public boolean contains(BitSet umi){
+        return s.contains(umi);
     }
 }

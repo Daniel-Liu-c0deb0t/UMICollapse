@@ -7,16 +7,19 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Map;
 
-import fastq.Read;
+import util.Read;
 import static util.Utils.charGet;
 import static util.Utils.charSet;
 import static util.Utils.charEquals;
 
 public class Trie implements DataStructure{
+    private Set<BitSet> s;
     private int umiLength;
     private Node root;
 
-    public Trie(Set<BitSet> s, int umiLength){
+    @Override
+    public void init(Set<BitSet> s, int umiLength, int maxEdits){
+        this.s = new HashSet<BitSet>(s);
         this.umiLength = umiLength;
 
         root = new Node();
@@ -39,6 +42,7 @@ public class Trie implements DataStructure{
         if(idx >= umiLength){
             res.add((BitSet)currStr.clone());
             currNode.setExists(false);
+            s.remove(currStr);
             return;
         }
 
@@ -69,6 +73,11 @@ public class Trie implements DataStructure{
             int nextIdx = Read.ENCODING_IDX.get(charGet(umi, i));
             curr = curr.ensureCreated(nextIdx);
         }
+    }
+
+    @Override
+    public boolean contains(BitSet umi){
+        return s.contains(umi);
     }
 
     private static class Node{

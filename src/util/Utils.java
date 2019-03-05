@@ -2,8 +2,6 @@ package util;
 
 import java.util.BitSet;
 
-import fastq.Read;
-
 public class Utils{
     public static final int HASH_CONST = 31;
 

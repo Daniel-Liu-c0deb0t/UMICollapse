@@ -13,12 +13,15 @@ import static util.Utils.HASH_CONST;
 import static util.Utils.umiDist;
 
 public class Ngram implements DataStructure{
+    private Set<BitSet> s;
     private int umiLength, ngramSize, hashPow;
     private Map<Interval, Set<Integer>> m;
     private BitSet[] arr;
     private BitSet removed;
 
-    public Ngram(Set<BitSet> s, int umiLength, int maxEdits){
+    @Override
+    public void init(Set<BitSet> s, int umiLength, int maxEdits){
+        this.s = new HashSet<BitSet>(s);
         this.umiLength = umiLength;
         ngramSize = (int)Math.ceil((umiLength - maxEdits) / (maxEdits + 1.0f) + 1.0f) - 1;
 
@@ -72,6 +75,7 @@ public class Ngram implements DataStructure{
                 if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k){
                     res.add(arr[idx]);
                     removed.set(idx);
+                    s.remove(arr[idx]);
                 }
             }
         }
@@ -99,6 +103,11 @@ public class Ngram implements DataStructure{
 
             m.get(in).add(idx);
         }
+    }
+
+    @Override
+    public boolean contains(BitSet umi){
+        return s.contains(umi);
     }
 
     private static class Interval{
