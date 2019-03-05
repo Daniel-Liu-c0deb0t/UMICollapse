@@ -3,6 +3,7 @@ package algo;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.BitSet;
 
 import data.DataStructure;
@@ -29,6 +30,9 @@ public class ConnectedComponents implements Algorithm{
         List<BitSet> c = data.removeNear(u, k);
 
         for(BitSet v : c){
+            if(u.equals(v))
+                continue;
+
             ReadFreq r = visitAndRemove(v, reads, data, k);
 
             if(r.freq > max.freq)
