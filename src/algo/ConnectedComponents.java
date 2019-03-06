@@ -3,7 +3,7 @@ package algo;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
+import java.util.HashMap;
 import java.util.BitSet;
 
 import data.DataStructure;
@@ -13,11 +13,15 @@ import util.Read;
 public class ConnectedComponents implements Algorithm{
     @Override
     public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
-        Set<BitSet> s = reads.keySet();
-        data.init(s, umiLength, k);
+        Map<BitSet, Integer> m = new HashMap<>();
+
+        for(Map.Entry<BitSet, Integer> e : reads.entrySet())
+            m.put(e.getKey(), e.getValue().freq);
+
+        data.init(m, umiLength, k);
         List<Read> res = new ArrayList<>();
 
-        for(BitSet umi : s){
+        for(BitSet umi : m.keySet()){
             if(data.contains(umi))
                 res.add(visitAndRemove(umi, reads, data, k).read);
         }
@@ -27,7 +31,7 @@ public class ConnectedComponents implements Algorithm{
 
     private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, int k){
         ReadFreq max = reads.get(u);
-        List<BitSet> c = data.removeNear(u, k);
+        List<BitSet> c = data.removeNear(u, k, Integer.MAX_VALUE);
 
         for(BitSet v : c){
             if(u.equals(v))

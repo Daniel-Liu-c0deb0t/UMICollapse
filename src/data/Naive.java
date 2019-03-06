@@ -26,8 +26,9 @@ public class Naive implements DataStructure{
             Map.Entry<BitSet, Integer> e = it.next();
             BitSet o = e.getKey();
             BitSet f = e.getValue();
+            int dist = umiDist(umi, o);
 
-            if(umiDist(umi, o) <= k && f <= maxFreq){
+            if(dist <= k && (dist == 0 || f <= maxFreq)){
                 res.add(o);
                 it.remove();
             }

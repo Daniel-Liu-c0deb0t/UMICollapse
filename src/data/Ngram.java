@@ -72,10 +72,14 @@ public class Ngram implements DataStructure{
             if(e.getValue() >= minMatch){
                 int idx = e.getKey();
 
-                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k && umiFreq.get(arr[idx]) <= maxFreq){
-                    res.add(arr[idx]);
-                    removed.set(idx);
-                    umiFreq.remove(arr[idx]);
+                if(!removed.get(idx)){
+                    int dist = umiDist(umi, arr[idx]);
+
+                    if(dist <= k && (dist == 0 || umiFreq.get(arr[idx]) <= maxFreq)){
+                        res.add(arr[idx]);
+                        removed.set(idx);
+                        umiFreq.remove(arr[idx]);
+                    }
                 }
             }
         }

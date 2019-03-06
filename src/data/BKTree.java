@@ -44,7 +44,7 @@ public class BKTree implements DataStructure{
     private void recursiveRemoveNear(BitSet umi, Node curr, int k, int maxFreq, List<BitSet> res){
         int dist = umiDist(umi, curr.getUMI());
 
-        if(dist <= k && curr.exists() && curr.getFreq() <= maxFreq){
+        if(dist <= k && curr.exists() && (dist == 0 || curr.getFreq() <= maxFreq)){
             res.add(curr.getUMI());
             curr.setExists(false);
             s.remove(curr.getUMI());

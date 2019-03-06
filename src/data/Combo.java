@@ -24,16 +24,16 @@ public class Combo implements DataStructure{
     @Override
     public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         List<BitSet> res = new ArrayList<>();
-        recursiveRemoveNear(umi, 0, k, maxFreq, new BitSet(), res);
+        recursiveRemoveNear(umi, 0, k, maxFreq, new BitSet(), res, k);
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, int k, int maxFreq, BitSet curr, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, int idx, int k, int maxFreq, BitSet curr, List<BitSet> res, int K){
         if(k < 0)
             return;
 
         if(idx >= umiLength){
-            if(umiFreq.containsKey(curr) && umiFreq.get(curr) <= maxFreq){
+            if(umiFreq.containsKey(curr) && (k == K || umiFreq.get(curr) <= maxFreq)){
                 res.add((BitSet)curr.clone());
                 umiFreq.remove(curr);
             }
@@ -43,14 +43,14 @@ public class Combo implements DataStructure{
 
         for(int c : Read.ENCODING_IDX.keySet()){
             if(charEquals(umi, idx, c))
-                recursiveRemoveNear(umi, idx + 1, k, maxFreq, charSet(curr, idx, c), res);
+                recursiveRemoveNear(umi, idx + 1, k, maxFreq, charSet(curr, idx, c), res, K);
             else
-                recursiveRemoveNear(umi, idx + 1, k - 1, maxFreq, charSet(curr, idx, c), res);
+                recursiveRemoveNear(umi, idx + 1, k - 1, maxFreq, charSet(curr, idx, c), res, K);
         }
     }
 
     @Override
     public boolean contains(BitSet umi){
-        return umiFreq.contains(umi);
+        return umiFreq.containsKey(umi);
     }
 }
