@@ -18,24 +18,27 @@ public class Trie implements DataStructure{
     private Node root;
 
     @Override
-    public void init(Set<BitSet> s, int umiLength, int maxEdits){
-        this.s = new HashSet<BitSet>(s);
+    public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
+        this.s = new HashSet<BitSet>(umiFreq.keySet());
         this.umiLength = umiLength;
 
-        root = new Node();
+        root = new Node(Integer.MAX_VALUE);
 
-        for(BitSet umi : s)
-            insert(umi);
+        for(Map.Entry<BitSet, Integer> e : umiFreq){
+            BitSet umi = e.getKey();
+            int freq = e.getValue();
+            insert(umi, freq);
+        }
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k){
+    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         List<BitSet> res = new ArrayList<>();
-        recursiveRemoveNear(umi, 0, root, k, new BitSet(), res);
+        recursiveRemoveNear(umi, 0, root, k, maxFreq, new BitSet(), res);
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, BitSet currStr, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, int maxFreq, BitSet currStr, List<BitSet> res){
         if(k < 0)
             return;
 
@@ -47,31 +50,35 @@ public class Trie implements DataStructure{
         }
 
         boolean exists = false;
+        int freq = Integer.MAX_VALUE;
 
         for(Map.Entry<Integer, Integer> e : Read.ENCODING_IDX.entrySet()){
             int c = e.getKey();
             int i = e.getValue();
 
-            if(!currNode.exists(i))
+            if(!currNode.exists(i) || currNode.getFreq(i) > maxFreq)
                 continue;
 
             if(charEquals(umi, idx, c))
-                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k, charSet(currStr, idx, c), res);
+                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k, maxFreq, charSet(currStr, idx, c), res);
             else
-                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k - 1, charSet(currStr, idx, c), res);
+                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k - 1, maxFreq, charSet(currStr, idx, c), res);
 
             exists |= currNode.exists(i);
+            freq = Math.min(freq, currNode.getFreq(i));
         }
 
         currNode.setExists(exists);
+        currNode.setFreq(freq);
     }
 
-    private void insert(BitSet umi){
+    private void insert(BitSet umi, int freq){
         Node curr = root;
 
         for(int i = 0; i < umiLength; i++){
+            curr.setFreq(Math.min(curr.getFreq(), freq));
             int nextIdx = Read.ENCODING_IDX.get(charGet(umi, i));
-            curr = curr.ensureCreated(nextIdx);
+            curr = curr.ensureCreated(nextIdx, freq);
         }
     }
 
@@ -83,18 +90,20 @@ public class Trie implements DataStructure{
     private static class Node{
         private Node[] c;
         private boolean exists;
+        private int freq;
 
-        Node(){
+        Node(int freq){
             this.c = null;
             this.exists = true;
+            this.freq = freq;
         }
 
-        Node ensureCreated(int idx){
+        Node ensureCreated(int idx, int freq){
             if(c == null)
                 c = new Node[Read.ENCODING_MAP.size()];
 
             if(c[idx] == null)
-                c[idx] = new Node();
+                c[idx] = new Node(freq);
 
             return c[idx];
         }
@@ -105,6 +114,18 @@ public class Trie implements DataStructure{
 
         void setExists(boolean exists){
             this.exists = exists;
+        }
+
+        int getFreq(int idx){
+            return c[idx].freq;
+        }
+
+        int getFreq(){
+            return freq;
+        }
+
+        void setFreq(int freq){
+            this.freq = freq;
         }
 
         Node get(int idx){
