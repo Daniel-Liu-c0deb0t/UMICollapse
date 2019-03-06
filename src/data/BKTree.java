@@ -16,7 +16,7 @@ public class BKTree implements DataStructure{
 
     @Override
     public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
-        this.s = new HashSet<BitSet>(umiFreq.keySet());
+        this.s = umiFreq.keySet();
         this.umiLength = umiLength;
 
         boolean first = true;

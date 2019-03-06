@@ -19,7 +19,7 @@ public class Trie implements DataStructure{
 
     @Override
     public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
-        this.s = new HashSet<BitSet>(umiFreq.keySet());
+        this.s = umiFreq.keySet();
         this.umiLength = umiLength;
 
         root = new Node(Integer.MAX_VALUE);

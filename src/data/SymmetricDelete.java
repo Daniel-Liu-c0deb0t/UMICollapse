@@ -13,24 +13,24 @@ import static util.Utils.charSet;
 import static util.Utils.umiDist;
 
 public class SymmetricDelete implements DataStructure{
-    private Set<BitSet> s;
+    private Map<BitSet, Integer> umiFreq;
     private int umiLength, maxEdits;
     private Map<BitSet, Set<Integer>> m;
     private BitSet[] arr;
     private BitSet removed;
 
     @Override
-    public void init(Set<BitSet> s, int umiLength, int maxEdits){
-        this.s = new HashSet<BitSet>(s);
+    public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
+        this.umiFreq = umiFreq;
         this.umiLength = umiLength;
         this.maxEdits = maxEdits;
 
         m = new HashMap<BitSet, Set<Integer>>();
-        arr = new BitSet[s.size()];
+        arr = new BitSet[umiFreq.size()];
         removed = new BitSet();
         int i = 0;
 
-        for(BitSet umi : s){
+        for(BitSet umi : umiFreq.keySet()){
             arr[i] = umi;
             insert(umi, i);
             i++;
@@ -39,7 +39,7 @@ public class SymmetricDelete implements DataStructure{
 
     // k <= maxEdits must be satisfied
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k){
+    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         int diff = maxEdits - k;
         int minMatch = 1;
 
@@ -61,10 +61,10 @@ public class SymmetricDelete implements DataStructure{
             if(e.getValue() >= minMatch){
                 int idx = e.getKey();
 
-                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k){
+                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k && umiFreq.get(arr[idx]) <= maxFreq){
                     res.add(arr[idx]);
                     removed.set(idx);
-                    s.remove(arr[idx]);
+                    umiFreq.remove(arr[idx]);
                 }
             }
         }
@@ -115,6 +115,6 @@ public class SymmetricDelete implements DataStructure{
 
     @Override
     public boolean contains(BitSet umi){
-        return s.contains(umi);
+        return umiFreq.containsKey(umi);
     }
 }

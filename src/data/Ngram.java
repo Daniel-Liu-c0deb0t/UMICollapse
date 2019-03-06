@@ -13,15 +13,15 @@ import static util.Utils.HASH_CONST;
 import static util.Utils.umiDist;
 
 public class Ngram implements DataStructure{
-    private Set<BitSet> s;
+    private Map<BitSet, Integer> umiFreq;
     private int umiLength, ngramSize, hashPow;
     private Map<Interval, Set<Integer>> m;
     private BitSet[] arr;
     private BitSet removed;
 
     @Override
-    public void init(Set<BitSet> s, int umiLength, int maxEdits){
-        this.s = new HashSet<BitSet>(s);
+    public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
+        this.umiFreq = umiFreq;
         this.umiLength = umiLength;
         ngramSize = (int)Math.ceil((umiLength - maxEdits) / (maxEdits + 1.0f) + 1.0f) - 1;
 
@@ -31,11 +31,11 @@ public class Ngram implements DataStructure{
             hashPow *= HASH_CONST;
 
         m = new HashMap<Interval, Set<Integer>>();
-        arr = new BitSet[s.size()];
+        arr = new BitSet[umiFreq.size()];
         removed = new BitSet();
         int i = 0;
 
-        for(BitSet umi : s){
+        for(BitSet umi : umiFreq.keySet()){
             arr[i] = umi;
             insert(umi, i);
             i++;
@@ -44,7 +44,7 @@ public class Ngram implements DataStructure{
 
     // k <= maxEdits must be satisfied
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k){
+    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         int minMatch = umiLength - ngramSize * (k + 1) + 1;
         Map<Integer, Integer> count = new HashMap<>();
         List<BitSet> res = new ArrayList<>();
@@ -72,10 +72,10 @@ public class Ngram implements DataStructure{
             if(e.getValue() >= minMatch){
                 int idx = e.getKey();
 
-                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k){
+                if(!removed.get(idx) && umiDist(umi, arr[idx]) <= k && umiFreq.get(arr[idx]) <= maxFreq){
                     res.add(arr[idx]);
                     removed.set(idx);
-                    s.remove(arr[idx]);
+                    umiFreq.remove(arr[idx]);
                 }
             }
         }
@@ -107,7 +107,7 @@ public class Ngram implements DataStructure{
 
     @Override
     public boolean contains(BitSet umi){
-        return s.contains(umi);
+        return umiFreq.containsKey(umi);
     }
 
     private static class Interval{
