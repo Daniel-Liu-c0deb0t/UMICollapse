@@ -34,6 +34,10 @@ public class Trie implements DataStructure{
     @Override
     public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         List<BitSet> res = new ArrayList<>();
+
+        if(maxFreq != Integer.MAX_VALUE) // always remove the queried UMI
+            recursiveRemoveNear(umi, 0, root, 0, Integer.MAX_VALUE, new BitSet(), res);
+
         recursiveRemoveNear(umi, 0, root, k, maxFreq, new BitSet(), res);
         return res;
     }
@@ -56,16 +60,17 @@ public class Trie implements DataStructure{
             int c = e.getKey();
             int i = e.getValue();
 
-            if(!currNode.exists(i) || currNode.getFreq(i) > maxFreq)
-                continue;
+            if(currNode.exists(i)){
+                if(currNode.getFreq(i) <= maxFreq){
+                    if(charEquals(umi, idx, c))
+                        recursiveRemoveNear(umi, idx + 1, currNode.get(i), k, maxFreq, charSet(currStr, idx, c), res);
+                    else
+                        recursiveRemoveNear(umi, idx + 1, currNode.get(i), k - 1, maxFreq, charSet(currStr, idx, c), res);
+                }
 
-            if(charEquals(umi, idx, c))
-                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k, maxFreq, charSet(currStr, idx, c), res);
-            else
-                recursiveRemoveNear(umi, idx + 1, currNode.get(i), k - 1, maxFreq, charSet(currStr, idx, c), res);
-
-            exists |= currNode.exists(i);
-            freq = Math.min(freq, currNode.getFreq(i));
+                exists |= currNode.exists(i);
+                freq = Math.min(freq, currNode.getFreq(i));
+            }
         }
 
         currNode.setExists(exists);
