@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Arrays;
 
 import data.DataStructure;
 import util.Read;
@@ -35,10 +36,12 @@ public class Directional implements Algorithm{
                 res.add(freq[i].readFreq.read);
             }
         }
+
+        return res;
     }
 
     private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, float percentage){
-        List<BitSet> c = data.removeNear(u, 1, percentage * reads.get(u).freq);
+        List<BitSet> c = data.removeNear(u, 1, (int)(percentage * reads.get(u).freq));
 
         for(BitSet v : c){
             if(u.equals(v))

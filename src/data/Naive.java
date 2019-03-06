@@ -25,7 +25,7 @@ public class Naive implements DataStructure{
         for(Iterator<Map.Entry<BitSet, Integer>> it = umiFreq.entrySet().iterator(); it.hasNext();){
             Map.Entry<BitSet, Integer> e = it.next();
             BitSet o = e.getKey();
-            BitSet f = e.getValue();
+            int f = e.getValue();
             int dist = umiDist(umi, o);
 
             if(dist <= k && (dist == 0 || f <= maxFreq)){

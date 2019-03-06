@@ -24,7 +24,7 @@ public class Trie implements DataStructure{
 
         root = new Node(Integer.MAX_VALUE);
 
-        for(Map.Entry<BitSet, Integer> e : umiFreq){
+        for(Map.Entry<BitSet, Integer> e : umiFreq.entrySet()){
             BitSet umi = e.getKey();
             int freq = e.getValue();
             insert(umi, freq);

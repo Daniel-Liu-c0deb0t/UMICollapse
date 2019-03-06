@@ -1,6 +1,5 @@
 package data;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.BitSet;
 import static util.Utils.umiDist;
 
 public class BKTree implements DataStructure{
-    private Set<Bitset> s;
+    private Set<BitSet> s;
     private int umiLength;
     private Node root;
 
@@ -21,7 +20,7 @@ public class BKTree implements DataStructure{
 
         boolean first = true;
 
-        for(Map.Entry<BitSet, Integer> e : umiFreq){
+        for(Map.Entry<BitSet, Integer> e : umiFreq.entrySet()){
             BitSet umi = e.getKey();
             int freq = e.getValue();
 

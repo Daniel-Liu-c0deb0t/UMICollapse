@@ -15,7 +15,7 @@ public class ConnectedComponents implements Algorithm{
     public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
         Map<BitSet, Integer> m = new HashMap<>();
 
-        for(Map.Entry<BitSet, Integer> e : reads.entrySet())
+        for(Map.Entry<BitSet, ReadFreq> e : reads.entrySet())
             m.put(e.getKey(), e.getValue().freq);
 
         data.init(m, umiLength, k);
