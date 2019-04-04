@@ -6,12 +6,13 @@ import java.util.BitSet;
 import java.util.Random;
 
 import util.Utils;
+import util.Read;
 import data.*;
 import algo.*;
 
 public class Test{
     public static void main(String[] args){
-        int numRand = 10000;
+        int numRand = 100;
         int numDup = 100;
         int numIter = 10;
         int umiLength = 10;
@@ -70,13 +71,11 @@ public class Test{
         return res;
     }
 
-    private static final char[] alphabet = {'A', 'T', 'C', 'G'};
-
     private static String randUMI(int n, Random rand){
         char[] res = new char[n];
 
         for(int i = 0; i < n; i++)
-            res[i] = alphabet[rand.nextInt(alphabet.length)];
+            res[i] = Read.ALPHABET[rand.nextInt(Read.ALPHABET.length)];
 
         return new String(res);
     }
@@ -87,7 +86,7 @@ public class Test{
 
         for(int i = 0; i < edits; i++){
             int idx = rand.nextInt(s.length());
-            res[idx] = pick(alphabet, res[idx], rand);
+            res[idx] = pick(Read.ALPHABET, res[idx], rand);
         }
 
         return new String(res);
