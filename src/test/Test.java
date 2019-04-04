@@ -3,6 +3,7 @@ package test;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.BitSet;
+import java.util.Random;
 
 import util.Utils;
 import data.*;
@@ -10,13 +11,13 @@ import algo.*;
 
 public class Test{
     public static void main(String[] args){
-        int numRand = 100;
+        int numRand = 10000;
         int numDup = 100;
         int numIter = 10;
         int umiLength = 10;
         int k = 1;
-        DataStructure data = new Naive();
-        Random rand = new Random(1234);
+        DataStructure data = new BKTree();
+        Random rand = new Random(1234); // fixed seed
 
         System.out.println("Data structure\t" + data.getClass().getName());
         System.out.println("Number of random iterations\t" + numRand);
@@ -48,7 +49,7 @@ public class Test{
     private static long runTest(DataStructure data, Map<BitSet, Integer> umiFreq, int umiLength, int k){
         long start = System.currentTimeMillis();
 
-        data.init((Map<BitSet, Integer>)umiFreq.clone(), umiLength, k);
+        data.init(new HashMap<BitSet, Integer>(umiFreq), umiLength, k);
 
         for(BitSet umi : umiFreq.keySet())
             data.removeNear(umi, k, Integer.MAX_VALUE);
