@@ -8,9 +8,8 @@ import java.util.Random;
 import util.Utils;
 import util.Read;
 import data.*;
-import algo.*;
 
-public class Test{
+public class BenchmarkTime{
     public static void main(String[] args){
         int numRand = 100;
         int numDup = 100;

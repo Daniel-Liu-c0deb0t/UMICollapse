@@ -49,6 +49,15 @@ public class Utils{
         return res;
     }
 
+    public static String toString(BitSet a, int length){
+        char[] res = new char[length];
+
+        for(int i = 0; i < length; i++)
+            res[i] = Read.ALPHABET[Read.ENCODING_IDX.get(charGet(a, i))];
+
+        return new String(res);
+    }
+
     // converts quality string to byte array, using the Phred+33 format
     public static byte[] toPhred33ByteArray(String q){
         byte[] res = new byte[q.length()];
