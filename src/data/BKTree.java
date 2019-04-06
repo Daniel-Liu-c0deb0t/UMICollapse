@@ -2,6 +2,7 @@ package data;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.BitSet;
@@ -87,6 +88,39 @@ public class BKTree implements DataStructure{
         return s.contains(umi);
     }
 
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        double[] d = depth(root);
+        res.put("max depth", (float)d[1]);
+        res.put("avg depth", (float)(d[2] / d[0]));
+        return res;
+    }
+
+    private double[] depth(Node curr){
+        double[] a = {0.0f, 0.0f, 0.0f}; // num leaf nodes, max depth, depth sum
+
+        boolean isLeaf = true;
+
+        for(int i = 0; i < umiLength + 1; i++){
+            if(curr.hasNode(i)){
+                double[] b = depth(curr.get(i));
+                a[0] += b[0];
+                a[1] = Math.max(a[1], b[1] + 1);
+                a[2] += b[2] + b[0];
+                isLeaf = false;
+            }
+        }
+
+        if(isLeaf){
+            a[0] += 1;
+            a[1] += 1;
+            a[2] += 1;
+        }
+
+        return a;
+    }
+
     private static class Node{
         private BitSet umi;
         private boolean exists, subtreeExists;
@@ -152,6 +186,10 @@ public class BKTree implements DataStructure{
 
         Node get(int k){
             return c[k];
+        }
+
+        boolean hasNode(int k){
+            return c != null && c[k] != null;
         }
     }
 }

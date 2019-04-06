@@ -121,4 +121,24 @@ public class SymmetricDelete implements DataStructure{
     public boolean contains(BitSet umi){
         return umiFreq.containsKey(umi);
     }
+
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        res.put("num subseq", (float)m.size());
+
+        int maxSubseq = 0;
+        float avgSubseq = 0.0f;
+
+        for(Map.Entry<BitSet, Set<Integer>> e : m.entrySet()){
+            int size = e.getValue().size();
+            maxSubseq = Math.max(maxSubseq, size);
+            avgSubseq += (float)size / m.size();
+        }
+
+        res.put("max subseq bin size", (float)maxSubseq);
+        res.put("avg subseq bin size", (float)avgSubseq);
+
+        return res;
+    }
 }

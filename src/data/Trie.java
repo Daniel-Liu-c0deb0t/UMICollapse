@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.HashMap;
 
 import util.Read;
 import static util.Utils.charGet;
@@ -92,6 +93,24 @@ public class Trie implements DataStructure{
         return s.contains(umi);
     }
 
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        res.put("num nodes", (float)numNodes(root));
+        return res;
+    }
+
+    private int numNodes(Node curr){
+        int count = 1;
+
+        for(int i = 0; i < Read.ENCODING_MAP.size(); i++){
+            if(curr.hasNode(i))
+                count += numNodes(curr.get(i));
+        }
+
+        return count;
+    }
+
     private static class Node{
         private Node[] c;
         private boolean exists;
@@ -135,6 +154,10 @@ public class Trie implements DataStructure{
 
         Node get(int idx){
             return c[idx];
+        }
+
+        boolean hasNode(int idx){
+            return c != null && c[idx] != null;
         }
     }
 }

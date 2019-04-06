@@ -114,6 +114,26 @@ public class Ngram implements DataStructure{
         return umiFreq.containsKey(umi);
     }
 
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        res.put("num n-grams", (float)m.size());
+
+        int maxNgrams = 0;
+        float avgNgrams = 0.0f;
+
+        for(Map.Entry<Interval, Set<Integer>> e : m.entrySet()){
+            int size = e.getValue().size();
+            maxNgrams = Math.max(maxNgrams, size);
+            avgNgrams += (float)size / m.size();
+        }
+
+        res.put("max n-gram bin size", (float)maxNgrams);
+        res.put("avg n-gram bin size", avgNgrams);
+
+        return res;
+    }
+
     private static class Interval{
         private BitSet s;
         private int lo, hi, hash;

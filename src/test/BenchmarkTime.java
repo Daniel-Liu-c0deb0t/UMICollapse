@@ -11,10 +11,10 @@ import data.*;
 
 public class BenchmarkTime{
     public static void main(String[] args){
-        int numRand = 100;
-        int numDup = 100;
-        int numIter = 10;
-        int umiLength = 10;
+        int numRand = 1000;
+        int numDup = 20;
+        int numIter = 5;
+        int umiLength = 100;
         int k = 1;
         DataStructure data = new BKTree();
         Random rand = new Random(1234); // fixed seed
@@ -35,7 +35,7 @@ public class BenchmarkTime{
         for(int i = 0; i < numIter + 1; i++){
             System.gc();
 
-            long time = runTest(data, umiFreq, umiLength, k);
+            long time = runTest(data, umiFreq, umiLength, k, i == 0);
 
             if(i > 0) // first time is warm-up
                 avgTime += time;
@@ -46,13 +46,20 @@ public class BenchmarkTime{
         System.out.println("Average time (ms)\t" + avgTime);
     }
 
-    private static long runTest(DataStructure data, Map<BitSet, Integer> umiFreq, int umiLength, int k){
+    private static long runTest(DataStructure data, Map<BitSet, Integer> umiFreq, int umiLength, int k, boolean first){
         long start = System.currentTimeMillis();
 
         data.init(new HashMap<BitSet, Integer>(umiFreq), umiLength, k);
 
         for(BitSet umi : umiFreq.keySet())
             data.removeNear(umi, k, Integer.MAX_VALUE);
+
+        if(first){
+            Map<String, Float> stats = data.stats();
+
+            for(Map.Entry<String, Float> e : stats.entrySet())
+                System.out.println(e.getKey() + "\t" + e.getValue());
+        }
 
         return System.currentTimeMillis() - start;
     }

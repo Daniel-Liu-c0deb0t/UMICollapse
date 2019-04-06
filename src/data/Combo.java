@@ -2,6 +2,7 @@ package data;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
@@ -52,5 +53,11 @@ public class Combo implements DataStructure{
     @Override
     public boolean contains(BitSet umi){
         return umiFreq.containsKey(umi);
+    }
+
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        return res;
     }
 }

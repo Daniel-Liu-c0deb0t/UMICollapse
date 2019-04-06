@@ -5,6 +5,7 @@ import static util.Utils.umiDist;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -40,5 +41,11 @@ public class Naive implements DataStructure{
     @Override
     public boolean contains(BitSet umi){
         return umiFreq.containsKey(umi);
+    }
+
+    @Override
+    public Map<String, Float> stats(){
+        Map<String, Float> res = new HashMap<>();
+        return res;
     }
 }
