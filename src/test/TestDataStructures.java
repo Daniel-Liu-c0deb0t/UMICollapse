@@ -14,7 +14,14 @@ import data.*;
 public class TestDataStructures{
     public static void main(String[] args){
         DataStructure baseline = new Naive();
-        DataStructure[] data = {new Combo(), new Ngram(), new SymmetricDelete(), new Trie(), new BKTree()};
+        DataStructure[] data = {
+            new Combo(),
+            new Ngram(),
+            new SymmetricDelete(),
+            new Trie(),
+            new BKTree(),
+            new FenwickTrie()
+        };
 
         String[] s1 = {"AAAA", "AAAT", "CCCC", "CCCG", "TTTT"};
         test(s1, 0, baseline, data);
