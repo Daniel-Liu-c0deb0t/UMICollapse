@@ -7,15 +7,15 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Arrays;
 
-import data.DataStructure;
+import data.ParallelDataStructure;
 import util.Read;
 import util.ReadFreq;
 import util.UmiFreq;
 
-public class Directional implements Algorithm{
+public class ParallelDirectional implements ParallelAlgorithm{
     // k is an integer from 0-100 that represent a percentage
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, int threadCount){
         float percentage = k / 100.0f;
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
