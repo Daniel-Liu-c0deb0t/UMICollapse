@@ -16,7 +16,7 @@ public class BenchmarkTime{
         int numIter = 5;
         int umiLength = 100;
         int k = 1;
-        DataStructure data = new FenwickTrie();
+        DataStructure data = new FenwickBKTree();
         Random rand = new Random(1234); // fixed seed
 
         System.out.println("Data structure\t" + data.getClass().getName());
