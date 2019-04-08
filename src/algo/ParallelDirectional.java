@@ -2,10 +2,13 @@ package algo;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 import data.ParallelDataStructure;
 import util.Read;
@@ -14,7 +17,7 @@ import util.UmiFreq;
 
 public class ParallelDirectional implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage, int threadCount){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage){
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
         Map<BitSet, Integer> m = new HashMap<>();
@@ -26,7 +29,7 @@ public class ParallelDirectional implements ParallelAlgorithm{
             idx++;
         }
 
-        Arrays.sort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
+        Arrays.parallelSort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
         data.init(m, umiLength, k);
 
         List<List<BitSet>> adjIdx = new ArrayList<>();
@@ -34,10 +37,8 @@ public class ParallelDirectional implements ParallelAlgorithm{
         for(int i = 0; i < freq.length; i++)
             adjIdx.add(null);
 
-        ForkJoinPool pool = new ForkJoinPool(threadCount); // custom pool for custom thread count
-
-        pool.submit(() -> IntStream.range(0, freq.length).parallel()
-                .forEach(i -> adjIdx.set(i, data.near(freq[i].umi, k, (int)(percentage * freq[i].readFreq.freq))))).get();
+        IntStream.range(0, freq.length).parallel()
+            .forEach(i -> adjIdx.set(i, data.near(freq[i].umi, k, (int)(percentage * freq[i].readFreq.freq))));
 
         Map<BitSet, List<BitSet>> adj = new HashMap<>();
 

@@ -75,9 +75,9 @@ public class ParallelFenwickTrie implements ParallelDataStructure{
 
             if(currNode.exists(i)){
                 if(charEquals(umi, idx, c))
-                    recursiveRemoveNear(umi, idx + 1, currNode.get(i), k, charSet(currStr, idx, c), res);
+                    recursiveNear(umi, idx + 1, currNode.get(i), k, charSet(currStr, idx, c), res);
                 else
-                    recursiveRemoveNear(umi, idx + 1, currNode.get(i), k - 1, charSet(currStr, idx, c), res);
+                    recursiveNear(umi, idx + 1, currNode.get(i), k - 1, charSet(currStr, idx, c), res);
             }
         }
     }

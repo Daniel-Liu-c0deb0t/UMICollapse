@@ -2,17 +2,20 @@ package algo;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.BitSet;
+import java.util.stream.IntStream;
 
 import data.ParallelDataStructure;
 import util.ReadFreq;
 import util.Read;
 
-public class ParallelConnectedComponents implements Algorithm{
+public class ParallelConnectedComponents implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage, int threadCount){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage){
         Map<BitSet, Integer> m = new HashMap<>();
         BitSet[] idxToUMI = new BitSet[reads.size()];
 
@@ -30,10 +33,8 @@ public class ParallelConnectedComponents implements Algorithm{
         for(int i = 0; i < m.size(); i++)
             adjIdx.add(null);
 
-        ForkJoinPool pool = new ForkJoinPool(threadCount); // custom pool for custom thread count
-
-        pool.submit(() -> IntStream.range(0, m.size()).parallel()
-                .forEach(i -> adjIdx.set(i, data.near(idxToUMI[i], k, Integer.MAX_VALUE)))).get();
+        IntStream.range(0, m.size()).parallel()
+            .forEach(i -> adjIdx.set(i, data.near(idxToUMI[i], k, Integer.MAX_VALUE)));
 
         Map<BitSet, List<BitSet>> adj = new HashMap<>();
 

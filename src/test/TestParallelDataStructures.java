@@ -11,17 +11,12 @@ import java.util.ArrayList;
 import util.Utils;
 import data.*;
 
-public class TestDataStructures{
+public class TestParallelDataStructures{
     public static void main(String[] args){
-        DataStructure baseline = new Naive();
-        DataStructure[] data = {
-            new Combo(),
-            new Ngram(),
-            new SymmetricDelete(),
-            new Trie(),
-            new BKTree(),
-            new FenwickTrie(),
-            new FenwickBKTree()
+        ParallelDataStructure baseline = new ParallelNaive();
+        ParallelDataStructure[] data = {
+            new ParallelFenwickTrie(),
+            new ParallelFenwickBKTree()
         };
 
         String[] s1 = {"AAAA", "AAAT", "CCCC", "CCCG", "TTTT"};
@@ -31,7 +26,7 @@ public class TestDataStructures{
         test(s2, 1, baseline, data);
     }
 
-    private static void test(String[] umiList, int k, DataStructure baseline, DataStructure[] data){
+    private static void test(String[] umiList, int k, ParallelDataStructure baseline, ParallelDataStructure[] data){
         Map<BitSet, Integer> m = new HashMap<>();
         int umiLength = umiList[0].length();
 
@@ -40,14 +35,14 @@ public class TestDataStructures{
 
         baseline.init(new HashMap<BitSet, Integer>(m), umiLength, k);
 
-        for(DataStructure d : data)
+        for(ParallelDataStructure d : data)
             d.init(new HashMap<BitSet, Integer>(m), umiLength, k);
 
         for(BitSet umi : m.keySet()){
-            List<BitSet> baselineList = baseline.removeNear(umi, k, Integer.MAX_VALUE);
+            List<BitSet> baselineList = baseline.near(umi, k, Integer.MAX_VALUE);
 
-            for(DataStructure d : data){
-                List<BitSet> list = d.removeNear(umi, k, Integer.MAX_VALUE);
+            for(ParallelDataStructure d : data){
+                List<BitSet> list = d.near(umi, k, Integer.MAX_VALUE);
 
                 if(!TestUtils.listMatches(list, baselineList)){
                     System.out.println("\nError");
