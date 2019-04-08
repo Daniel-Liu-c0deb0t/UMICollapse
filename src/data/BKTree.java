@@ -54,18 +54,21 @@ public class BKTree implements DataStructure{
             s.remove(curr.getUMI());
         }
 
-        int lo = Math.max(dist - k, 0);
-        int hi = Math.min(dist + k, umiLength);
         boolean subtreeExists = curr.exists();
         int minFreq = curr.exists() ? curr.getFreq() : Integer.MAX_VALUE;
 
-        for(int i = 0; i < umiLength + 1; i++){
-            if(curr.subtreeExists(i)){
-                if(i >= lo && i <= hi && curr.minFreq(i) <= maxFreq)
-                    recursiveRemoveNear(umi, curr.get(i), k, maxFreq, res);
+        if(curr.hasNodes()){
+            int lo = Math.max(dist - k, 0);
+            int hi = Math.min(dist + k, umiLength);
 
-                minFreq = Math.min(minFreq, curr.minFreq(i));
-                subtreeExists |= curr.subtreeExists(i);
+            for(int i = 0; i < umiLength + 1; i++){
+                if(curr.subtreeExists(i)){
+                    if(i >= lo && i <= hi && curr.minFreq(i) <= maxFreq)
+                        recursiveRemoveNear(umi, curr.get(i), k, maxFreq, res);
+
+                    minFreq = Math.min(minFreq, curr.minFreq(i));
+                    subtreeExists |= curr.subtreeExists(i);
+                }
             }
         }
 
@@ -165,7 +168,7 @@ public class BKTree implements DataStructure{
         }
 
         boolean subtreeExists(int k){
-            return c != null && c[k] != null && c[k].subtreeExists;
+            return c[k] != null && c[k].subtreeExists;
         }
 
         void setMinFreq(int minFreq){
@@ -190,6 +193,10 @@ public class BKTree implements DataStructure{
 
         boolean hasNode(int k){
             return c != null && c[k] != null;
+        }
+
+        boolean hasNodes(){
+            return c != null;
         }
     }
 }

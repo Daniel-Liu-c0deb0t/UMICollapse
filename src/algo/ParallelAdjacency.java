@@ -14,7 +14,7 @@ import data.ParallelDataStructure;
 
 public class ParallelAdjacency implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, int threadCount){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage, int threadCount){
         Map<BitSet, Integer> m = new HashMap<>();
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
@@ -37,7 +37,7 @@ public class ParallelAdjacency implements ParallelAlgorithm{
         ForkJoinPool pool = new ForkJoinPool(threadCount); // custom pool for custom thread count
 
         pool.submit(() -> IntStream.range(0, freq.length).parallel()
-                    .forEach(i -> adj.set(i, data.near(freq[i].umi, k, Integer.MAX_VALUE)))).get();
+                .forEach(i -> adj.set(i, data.near(freq[i].umi, k, Integer.MAX_VALUE)))).get();
 
         Set<BitSet> visited = new HashSet<>();
 

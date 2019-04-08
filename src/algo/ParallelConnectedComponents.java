@@ -12,7 +12,7 @@ import util.Read;
 
 public class ParallelConnectedComponents implements Algorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, int threadCount){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage, int threadCount){
         Map<BitSet, Integer> m = new HashMap<>();
         BitSet[] idxToUMI = new BitSet[reads.size()];
 
@@ -33,7 +33,7 @@ public class ParallelConnectedComponents implements Algorithm{
         ForkJoinPool pool = new ForkJoinPool(threadCount); // custom pool for custom thread count
 
         pool.submit(() -> IntStream.range(0, m.size()).parallel()
-                    .forEach(i -> adjIdx.set(i, data.near(idxToUMI[i], k, Integer.MAX_VALUE)))).get();
+                .forEach(i -> adjIdx.set(i, data.near(idxToUMI[i], k, Integer.MAX_VALUE)))).get();
 
         Map<BitSet, List<BitSet>> adj = new HashMap<>();
 
@@ -45,13 +45,13 @@ public class ParallelConnectedComponents implements Algorithm{
 
         for(BitSet umi : m.keySet()){
             if(!visited.contains(umi))
-                res.add(visitAndRemove(umi, reads, adj, visited, k).read);
+                res.add(visitAndRemove(umi, reads, adj, visited).read);
         }
 
         return res;
     }
 
-    private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, List<BitSet>> adj, Set<BitSet> visited, int k){
+    private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, List<BitSet>> adj, Set<BitSet> visited){
         if(visited.contains(u))
             return null;
 
@@ -63,7 +63,7 @@ public class ParallelConnectedComponents implements Algorithm{
             if(u.equals(v))
                 continue;
 
-            ReadFreq r = visitAndRemove(v, reads, adj, visited, k);
+            ReadFreq r = visitAndRemove(v, reads, adj, visited);
 
             if(r != null && r.freq > max.freq)
                 max = r;

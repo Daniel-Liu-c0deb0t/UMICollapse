@@ -9,5 +9,5 @@ import util.Read;
 import data.DataStructure;
 
 public interface Algorithm{
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k);
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k, float percentage);
 }

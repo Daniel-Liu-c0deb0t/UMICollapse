@@ -13,10 +13,8 @@ import util.ReadFreq;
 import util.UmiFreq;
 
 public class Directional implements Algorithm{
-    // k is an integer from 0-100 that represent a percentage
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
-        float percentage = k / 100.0f;
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k, float percentage){
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
         Map<BitSet, Integer> m = new HashMap<>();
@@ -29,11 +27,11 @@ public class Directional implements Algorithm{
         }
 
         Arrays.sort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
-        data.init(m, umiLength, 1);
+        data.init(m, umiLength, k);
 
         for(int i = 0; i < freq.length; i++){
             if(data.contains(freq[i].umi)){
-                visitAndRemove(freq[i].umi, reads, data, percentage);
+                visitAndRemove(freq[i].umi, reads, data, k, percentage);
                 res.add(freq[i].readFreq.read);
             }
         }
@@ -41,14 +39,14 @@ public class Directional implements Algorithm{
         return res;
     }
 
-    private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, float percentage){
-        List<BitSet> c = data.removeNear(u, 1, (int)(percentage * reads.get(u).freq));
+    private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, int k, float percentage){
+        List<BitSet> c = data.removeNear(u, k, (int)(percentage * reads.get(u).freq));
 
         for(BitSet v : c){
             if(u.equals(v))
                 continue;
 
-            visitAndRemove(v, reads, data, percentage);
+            visitAndRemove(v, reads, data, k, percentage);
         }
     }
 }

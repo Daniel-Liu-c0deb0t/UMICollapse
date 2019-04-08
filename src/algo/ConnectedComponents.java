@@ -12,7 +12,7 @@ import util.Read;
 
 public class ConnectedComponents implements Algorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k, float percentage){
         Map<BitSet, Integer> m = new HashMap<>();
 
         for(Map.Entry<BitSet, ReadFreq> e : reads.entrySet())

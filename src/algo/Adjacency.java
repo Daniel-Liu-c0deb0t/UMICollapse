@@ -14,7 +14,7 @@ import data.DataStructure;
 
 public class Adjacency implements Algorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k, float percentage){
         Map<BitSet, Integer> m = new HashMap<>();
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
