@@ -3,8 +3,6 @@ package data;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
@@ -45,8 +43,8 @@ public class FenwickTrie implements DataStructure{
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
 
         if(maxFreq != Integer.MAX_VALUE){ // always remove the queried UMI
             int freqIdx = freqs.size();
@@ -68,7 +66,7 @@ public class FenwickTrie implements DataStructure{
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, BitSet currStr, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, BitSet currStr, Set<BitSet> res){
         if(k < 0)
             return;
 

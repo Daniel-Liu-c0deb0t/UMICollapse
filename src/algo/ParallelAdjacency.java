@@ -32,7 +32,7 @@ public class ParallelAdjacency implements ParallelAlgorithm{
         Arrays.parallelSort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
         data.init(m, umiLength, k);
 
-        List<List<BitSet>> adj = new ArrayList<>();
+        List<Set<BitSet>> adj = new ArrayList<>();
 
         for(int i = 0; i < freq.length; i++)
             adj.add(null);
@@ -44,9 +44,7 @@ public class ParallelAdjacency implements ParallelAlgorithm{
 
         for(int i = 0; i < freq.length; i++){
             if(!visited.contains(freq[i].umi)){
-                for(BitSet umi : adj.get(i))
-                    visited.add(umi);
-
+                visited.addAll(adj.get(i));
                 res.add(freq[i].readFreq.read);
             }
         }

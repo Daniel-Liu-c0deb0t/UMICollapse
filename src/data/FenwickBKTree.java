@@ -1,11 +1,10 @@
 package data;
 
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.BitSet;
 
 import static util.Utils.umiDist;
@@ -41,8 +40,8 @@ public class FenwickBKTree implements DataStructure{
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
 
         if(maxFreq != Integer.MAX_VALUE){ // always remove the queried UMI
             int freqIdx = freqs.size();
@@ -64,7 +63,7 @@ public class FenwickBKTree implements DataStructure{
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, Node curr, int k, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, Node curr, int k, Set<BitSet> res){
         int dist = umiDist(umi, curr.getUMI());
 
         if(dist <= k && curr.exists()){
@@ -124,7 +123,7 @@ public class FenwickBKTree implements DataStructure{
             if(curr != null){
                 double[] a = depth(curr);
                 d[0] += a[0];
-                d[1] += a[1];
+                d[1] = Math.max(d[1], a[1]);
                 d[2] += a[2];
             }
         }

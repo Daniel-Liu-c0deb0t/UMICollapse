@@ -1,10 +1,9 @@
 package data;
 
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.BitSet;
 
 import static util.Utils.umiDist;
@@ -35,8 +34,8 @@ public class BKTree implements DataStructure{
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
 
         if(maxFreq != Integer.MAX_VALUE) // always remove the queried UMI
             recursiveRemoveNear(umi, root, 0, Integer.MAX_VALUE, res);
@@ -45,7 +44,7 @@ public class BKTree implements DataStructure{
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, Node curr, int k, int maxFreq, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, Node curr, int k, int maxFreq, Set<BitSet> res){
         int dist = umiDist(umi, curr.getUMI());
 
         if(dist <= k && curr.exists() && curr.getFreq() <= maxFreq){

@@ -28,15 +28,15 @@ public class ParallelConnectedComponents implements ParallelAlgorithm{
 
         data.init(m, umiLength, k);
 
-        List<List<BitSet>> adjIdx = new ArrayList<>();
+        List<Set<BitSet>> adjIdx = new ArrayList<>();
 
-        for(int i = 0; i < m.size(); i++)
+        for(int i = 0; i < reads.size(); i++)
             adjIdx.add(null);
 
-        IntStream.range(0, m.size()).parallel()
+        IntStream.range(0, reads.size()).parallel()
             .forEach(i -> adjIdx.set(i, data.near(idxToUMI[i], k, Integer.MAX_VALUE)));
 
-        Map<BitSet, List<BitSet>> adj = new HashMap<>();
+        Map<BitSet, Set<BitSet>> adj = new HashMap<>();
 
         for(int i = 0; i < adjIdx.size(); i++)
             adj.put(idxToUMI[i], adjIdx.get(i));
@@ -44,7 +44,7 @@ public class ParallelConnectedComponents implements ParallelAlgorithm{
         List<Read> res = new ArrayList<>();
         Set<BitSet> visited = new HashSet<>();
 
-        for(BitSet umi : m.keySet()){
+        for(BitSet umi : reads.keySet()){
             if(!visited.contains(umi))
                 res.add(visitAndRemove(umi, reads, adj, visited).read);
         }
@@ -52,12 +52,12 @@ public class ParallelConnectedComponents implements ParallelAlgorithm{
         return res;
     }
 
-    private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, List<BitSet>> adj, Set<BitSet> visited){
+    private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, Set<BitSet>> adj, Set<BitSet> visited){
         if(visited.contains(u))
             return null;
 
         ReadFreq max = reads.get(u);
-        List<BitSet> c = adj.get(u);
+        Set<BitSet> c = adj.get(u);
         visited.add(u);
 
         for(BitSet v : c){

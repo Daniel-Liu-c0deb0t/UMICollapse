@@ -2,8 +2,6 @@ package data;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
@@ -33,8 +31,8 @@ public class Trie implements DataStructure{
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
 
         if(maxFreq != Integer.MAX_VALUE) // always remove the queried UMI
             recursiveRemoveNear(umi, 0, root, 0, Integer.MAX_VALUE, new BitSet(), res);
@@ -43,7 +41,7 @@ public class Trie implements DataStructure{
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, int maxFreq, BitSet currStr, List<BitSet> res){
+    private void recursiveRemoveNear(BitSet umi, int idx, Node currNode, int k, int maxFreq, BitSet currStr, Set<BitSet> res){
         if(k < 0)
             return;
 

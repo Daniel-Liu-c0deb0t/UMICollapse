@@ -3,6 +3,7 @@ package algo;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public class Directional implements Algorithm{
     }
 
     private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, int k, float percentage){
-        List<BitSet> c = data.removeNear(u, k, (int)(percentage * reads.get(u).freq));
+        Set<BitSet> c = data.removeNear(u, k, (int)(percentage * reads.get(u).freq));
 
         for(BitSet v : c){
             if(u.equals(v))

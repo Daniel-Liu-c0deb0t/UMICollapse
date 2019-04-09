@@ -4,8 +4,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 
 import static util.Utils.charGet;
@@ -44,10 +42,10 @@ public class Ngram implements DataStructure{
 
     // k <= maxEdits must be satisfied
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         int minMatch = umiLength - ngramSize * (k + 1) + 1;
         Map<Integer, Integer> count = new HashMap<>();
-        List<BitSet> res = new ArrayList<>();
+        Set<BitSet> res = new HashSet<>();
         int hash = 0;
 
         for(int i = 0; i <= umiLength - ngramSize; i++){

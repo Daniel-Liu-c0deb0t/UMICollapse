@@ -7,6 +7,8 @@ import java.util.Random;
 
 import util.Utils;
 import util.Read;
+import util.ReadFreq;
+import algo.*;
 import data.*;
 
 public class BenchmarkTime{
@@ -16,9 +18,12 @@ public class BenchmarkTime{
         int numIter = 5;
         int umiLength = 100;
         int k = 1;
+        float percentage = 0.5f;
+        Algorithm algo = new ConnectedComponents();
         DataStructure data = new FenwickBKTree();
         Random rand = new Random(1234); // fixed seed
 
+        System.out.println("Algorithm\t" + algo.getClass().getName());
         System.out.println("Data structure\t" + data.getClass().getName());
         System.out.println("Number of random iterations\t" + numRand);
         System.out.println("Number of duplicates\t" + numDup);
@@ -26,7 +31,7 @@ public class BenchmarkTime{
         System.out.println("UMI length\t" + umiLength);
         System.out.println("Max number of edits\t" + k);
 
-        Map<BitSet, Integer> umiFreq = TestUtils.generateData(numRand, numDup, umiLength, k, rand);
+        Map<BitSet, ReadFreq> umiFreq = TestUtils.generateData(numRand, numDup, umiLength, k, percentage, rand);
 
         System.out.println("Actual number of UMIs\t" + umiFreq.size());
 
@@ -35,7 +40,7 @@ public class BenchmarkTime{
         for(int i = 0; i < numIter + 1; i++){
             System.gc();
 
-            long time = runTest(data, umiFreq, umiLength, k, i == 0);
+            long time = runTest(algo, data, umiFreq, umiLength, k, percentage, i == 0);
 
             if(i > 0) // first time is warm-up
                 avgTime += time;
@@ -46,13 +51,10 @@ public class BenchmarkTime{
         System.out.println("Average time (ms)\t" + avgTime);
     }
 
-    private static long runTest(DataStructure data, Map<BitSet, Integer> umiFreq, int umiLength, int k, boolean first){
+    private static long runTest(Algorithm algo, DataStructure data, Map<BitSet, ReadFreq> umiFreq, int umiLength, int k, float percentage, boolean first){
         long start = System.currentTimeMillis();
 
-        data.init(new HashMap<BitSet, Integer>(umiFreq), umiLength, k);
-
-        for(BitSet umi : umiFreq.keySet())
-            data.removeNear(umi, k, Integer.MAX_VALUE);
+        algo.apply(umiFreq, data, umiLength, k, percentage);
 
         if(first){
             Map<String, Float> stats = data.stats();

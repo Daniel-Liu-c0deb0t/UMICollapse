@@ -2,8 +2,6 @@ package data;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.BitSet;
@@ -39,7 +37,7 @@ public class SymmetricDelete implements DataStructure{
 
     // k <= maxEdits must be satisfied
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         int diff = maxEdits - k;
         int minMatch = 1;
 
@@ -55,7 +53,7 @@ public class SymmetricDelete implements DataStructure{
         for(int i = 0; i <= maxEdits; i++)
             recursiveRemoveNear(umi, i, maxEdits - i, b, 0, resCount);
 
-        List<BitSet> res = new ArrayList<>();
+        Set<BitSet> res = new HashSet<>();
 
         for(Map.Entry<Integer, Integer> e : resCount.entrySet()){
             if(e.getValue() >= minMatch){

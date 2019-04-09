@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.BitSet;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 
 import util.Utils;
 import data.*;
@@ -39,12 +37,12 @@ public class TestParallelDataStructures{
             d.init(new HashMap<BitSet, Integer>(m), umiLength, k);
 
         for(BitSet umi : m.keySet()){
-            List<BitSet> baselineList = baseline.near(umi, k, Integer.MAX_VALUE);
+            Set<BitSet> baselineSet = baseline.near(umi, k, Integer.MAX_VALUE);
 
             for(ParallelDataStructure d : data){
-                List<BitSet> list = d.near(umi, k, Integer.MAX_VALUE);
+                Set<BitSet> set = d.near(umi, k, Integer.MAX_VALUE);
 
-                if(!TestUtils.listMatches(list, baselineList)){
+                if(!TestUtils.setMatches(set, baselineSet)){
                     System.out.println("\nError");
 
                     for(String s : umiList)
@@ -53,6 +51,8 @@ public class TestParallelDataStructures{
                     System.out.println("Data structure\t" + d.getClass().getName());
                     System.out.println("Max number of edits\t" + k);
                     System.out.println("Query\t" + Utils.toString(umi, umiLength));
+                    System.out.println("Baseline result\t" + baselineSet);
+                    System.out.println("This result\t" + set);
                 }
             }
         }

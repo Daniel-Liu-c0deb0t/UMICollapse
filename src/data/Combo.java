@@ -4,8 +4,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 
 import util.Read;
@@ -23,13 +21,13 @@ public class Combo implements DataStructure{
     }
 
     @Override
-    public List<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
         recursiveRemoveNear(umi, 0, k, maxFreq, new BitSet(), res, k);
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, int k, int maxFreq, BitSet curr, List<BitSet> res, int K){
+    private void recursiveRemoveNear(BitSet umi, int idx, int k, int maxFreq, BitSet curr, Set<BitSet> res, int K){
         if(k < 0)
             return;
 

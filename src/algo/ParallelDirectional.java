@@ -32,7 +32,7 @@ public class ParallelDirectional implements ParallelAlgorithm{
         Arrays.parallelSort(freq, (a, b) -> b.readFreq.freq - a.readFreq.freq);
         data.init(m, umiLength, k);
 
-        List<List<BitSet>> adjIdx = new ArrayList<>();
+        List<Set<BitSet>> adjIdx = new ArrayList<>();
 
         for(int i = 0; i < freq.length; i++)
             adjIdx.add(null);
@@ -40,7 +40,7 @@ public class ParallelDirectional implements ParallelAlgorithm{
         IntStream.range(0, freq.length).parallel()
             .forEach(i -> adjIdx.set(i, data.near(freq[i].umi, k, (int)(percentage * freq[i].readFreq.freq))));
 
-        Map<BitSet, List<BitSet>> adj = new HashMap<>();
+        Map<BitSet, Set<BitSet>> adj = new HashMap<>();
 
         for(int i = 0; i < freq.length; i++)
             adj.put(freq[i].umi, adjIdx.get(i));
@@ -57,11 +57,11 @@ public class ParallelDirectional implements ParallelAlgorithm{
         return res;
     }
 
-    private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, List<BitSet>> adj, Set<BitSet> visited){
+    private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, Map<BitSet, Set<BitSet>> adj, Set<BitSet> visited){
         if(visited.contains(u))
             return;
 
-        List<BitSet> c = adj.get(u);
+        Set<BitSet> c = adj.get(u);
         visited.add(u);
 
         for(BitSet v : c){

@@ -3,11 +3,8 @@ package data;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Map;
-import java.util.HashMap;
 
 import util.Read;
 import static util.Utils.charGet;
@@ -43,8 +40,8 @@ public class ParallelFenwickTrie implements ParallelDataStructure{
     }
 
     @Override
-    public List<BitSet> near(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> near(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
         res.add(umi); // always include the queried UMI
 
         Map.Entry<Integer, Integer> floorEntry = freqs.floorEntry(maxFreq);
@@ -60,7 +57,7 @@ public class ParallelFenwickTrie implements ParallelDataStructure{
         return res;
     }
 
-    private void recursiveNear(BitSet umi, int idx, Node currNode, int k, BitSet currStr, List<BitSet> res){
+    private void recursiveNear(BitSet umi, int idx, Node currNode, int k, BitSet currStr, Set<BitSet> res){
         if(k < 0)
             return;
 

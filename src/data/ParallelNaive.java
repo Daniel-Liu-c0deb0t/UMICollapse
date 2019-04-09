@@ -5,9 +5,6 @@ import static util.Utils.umiDist;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Iterator;
 
@@ -20,8 +17,8 @@ public class ParallelNaive implements ParallelDataStructure{
     }
 
     @Override
-    public List<BitSet> near(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> near(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
 
         for(Iterator<Map.Entry<BitSet, Integer>> it = umiFreq.entrySet().iterator(); it.hasNext();){
             Map.Entry<BitSet, Integer> e = it.next();

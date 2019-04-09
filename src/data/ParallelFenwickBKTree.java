@@ -1,11 +1,9 @@
 package data;
 
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.BitSet;
 
 import static util.Utils.umiDist;
@@ -39,8 +37,8 @@ public class ParallelFenwickBKTree implements ParallelDataStructure{
     }
 
     @Override
-    public List<BitSet> near(BitSet umi, int k, int maxFreq){
-        List<BitSet> res = new ArrayList<>();
+    public Set<BitSet> near(BitSet umi, int k, int maxFreq){
+        Set<BitSet> res = new HashSet<>();
         res.add(umi); // always include queried UMI
 
         Map.Entry<Integer, Integer> floorEntry = freqs.floorEntry(maxFreq);
@@ -56,7 +54,7 @@ public class ParallelFenwickBKTree implements ParallelDataStructure{
         return res;
     }
 
-    private void recursiveNear(BitSet umi, Node curr, int k, List<BitSet> res){
+    private void recursiveNear(BitSet umi, Node curr, int k, Set<BitSet> res){
         int dist = umiDist(umi, curr.getUMI());
 
         if(dist <= k)

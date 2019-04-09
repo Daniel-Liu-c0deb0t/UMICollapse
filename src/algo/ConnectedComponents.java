@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.BitSet;
 
 import data.DataStructure;
@@ -21,7 +22,7 @@ public class ConnectedComponents implements Algorithm{
         data.init(m, umiLength, k);
         List<Read> res = new ArrayList<>();
 
-        for(BitSet umi : m.keySet()){
+        for(BitSet umi : reads.keySet()){
             if(data.contains(umi))
                 res.add(visitAndRemove(umi, reads, data, k).read);
         }
@@ -31,7 +32,7 @@ public class ConnectedComponents implements Algorithm{
 
     private ReadFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, int k){
         ReadFreq max = reads.get(u);
-        List<BitSet> c = data.removeNear(u, k, Integer.MAX_VALUE);
+        Set<BitSet> c = data.removeNear(u, k, Integer.MAX_VALUE);
 
         for(BitSet v : c){
             if(u.equals(v))
