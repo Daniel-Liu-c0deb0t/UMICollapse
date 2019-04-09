@@ -33,7 +33,7 @@ public class ParallelBenchmarkTime{
         System.out.println("Max number of edits\t" + k);
         System.out.println("Thread count\t" + threadCount);
 
-        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", threadCount + "");
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (threadCount - 1) + "");
 
         Map<BitSet, ReadFreq> umiFreq = TestUtils.generateData(numRand, numDup, umiLength, k, percentage, rand);
 
