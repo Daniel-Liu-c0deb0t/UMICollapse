@@ -1,15 +1,15 @@
 package merge;
 
 import util.Read;
-import util.BAMRead;
+import util.SAMRead;
 
 public class MapQualMerge implements Merge{
     @Override
     public Read merge(Read a, Read b){
-        BAMRead bamA = (BAMRead)a;
-        BAMRead bamB = (BAMRead)b;
+        SAMRead samA = (SAMRead)a;
+        SAMRead samB = (SAMRead)b;
 
-        if(bamA.getMapQual() >= bamB.getMapQual())
+        if(samA.getMapQual() >= samB.getMapQual())
             return a;
         else
             return b;

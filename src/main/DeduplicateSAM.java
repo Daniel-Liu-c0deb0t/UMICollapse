@@ -1,8 +1,8 @@
 package main;
 
 import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SAMReader;
-import htsjdk.samtools.SAMReaderFactory;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
 
@@ -11,15 +11,18 @@ import java.util.HashMap;
 import java.util.BitSet;
 import java.util.List;
 
+import java.io.File;
+
 import data.*;
 import algo.*;
+import merge.*;
 import util.Read;
 import util.SAMRead;
 import util.ReadFreq;
 
 public class DeduplicateSAM{
     public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
-        SAMReader reader = SAMReaderFactory.makeDefault().open(in);
+        SamReader reader = SamReaderFactory.makeDefault().open(in);
         Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
 
         for(SAMRecord record : reader){
@@ -43,7 +46,12 @@ public class DeduplicateSAM{
         }
 
         SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, out);
-        reader.close();
+
+        try{
+            reader.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
         System.gc(); // attempt to clear up memory before deduplicating
 

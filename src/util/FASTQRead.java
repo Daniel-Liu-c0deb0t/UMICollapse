@@ -8,34 +8,34 @@ import static util.Utils.toBitSet;
 import static util.Utils.toPhred33ByteArray;
 import static util.Utils.toPhred33String;
 
-public class FASTQRead implements Read{
+public class FASTQRead extends Read{
     private String desc;
     private BitSet seq;
     private byte[] qual;
     private int avgQual;
 
-    public Read(String desc, String umi, String seq, String qual){
+    public FASTQRead(String desc, String umi, String seq, String qual){
         this.desc = desc;
         this.seq = toBitSet(umi.toUpperCase() + seq.toUpperCase());
         this.qual = toPhred33ByteArray(qual);
 
         float avg = 0.0f;
 
-        for(byte b : qual)
-            avg += (float)b / qual.length;
+        for(byte b : this.qual)
+            avg += (float)b / this.qual.length;
 
         this.avgQual = (int)avg;
     }
 
-    public Read(String desc, String umiAndSeq, String qual){
+    public FASTQRead(String desc, String umiAndSeq, String qual){
         this.desc = desc;
         this.seq = toBitSet(umiAndSeq.toUpperCase());
         this.qual = toPhred33ByteArray(qual);
 
         float avg = 0.0f;
 
-        for(byte b : qual)
-            avg += (float)b / qual.length;
+        for(byte b : this.qual)
+            avg += (float)b / this.qual.length;
 
         this.avgQual = (int)avg;
     }
@@ -50,7 +50,7 @@ public class FASTQRead implements Read{
         return avgQual;
     }
 
-    public FastqRecord toFASTQRecord(int umiLength){
-        return new FastqRecord(desc, Utils.toString(seq).substring(umiLength), "", Utils.toPhred33String(qual));
+    public FastqRecord toFASTQRecord(int length, int umiLength){
+        return new FastqRecord(desc, Utils.toString(seq, length).substring(umiLength), "", Utils.toPhred33String(qual));
     }
 }

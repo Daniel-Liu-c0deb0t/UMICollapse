@@ -6,7 +6,7 @@ import java.util.BitSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class SAMRead implements Read{
+public class SAMRead extends Read{
     private static final Pattern umiPattern = Pattern.compile("^.*_([ATCG]+).*$", Pattern.CASE_INSENSITIVE);
 
     private SAMRecord record;
@@ -17,7 +17,7 @@ public class SAMRead implements Read{
 
         float avg = 0.0f;
 
-        for(byte b : record.baseQualities())
+        for(byte b : record.getBaseQualities())
             avg += (float)b / record.getReadLength();
 
         this.avgQual = (int)avg;

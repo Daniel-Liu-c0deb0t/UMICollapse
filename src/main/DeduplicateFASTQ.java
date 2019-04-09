@@ -10,8 +10,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
+import java.io.File;
+
 import algo.*;
 import data.*;
+import merge.*;
 import util.Read;
 import util.FASTQRead;
 import util.ReadFreq;
@@ -25,7 +28,7 @@ public class DeduplicateFASTQ{
 
         for(FastqRecord record : reader){
             length = record.getReadLength();
-            Read read = new FASTQRead(record.getReadHeader(), record.getReadString(), record.getBaseQualityString());
+            Read read = new FASTQRead(record.getReadName(), record.getReadString(), record.getBaseQualityString());
             BitSet umi = read.getUMI();
 
             if(umiRead.containsKey(umi)){
@@ -51,7 +54,7 @@ public class DeduplicateFASTQ{
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
 
         for(Read read : deduped)
-            writer.write(((FASTQRead)read).toFASTQRecord(umiLength));
+            writer.write(((FASTQRead)read).toFASTQRecord(length, umiLength));
 
         writer.close();
     }

@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.BitSet;
 
-public interface Read{
+public abstract class Read{
     public static final int ENCODING_DIST = 2;
     public static final int ENCODING_LENGTH = 3;
     public static final Map<Character, Integer> ENCODING_MAP = new HashMap<>();
@@ -23,6 +23,6 @@ public interface Read{
         ENCODING_IDX.put(0b011, 3);
     }
 
-    public int getAvgQual();
-    public BitSet getUMI();
+    public abstract int getAvgQual();
+    public abstract BitSet getUMI();
 }
