@@ -67,4 +67,14 @@ public class Utils{
 
         return res;
     }
+
+    // converts byte array to quality string, using the Phred+33 format
+    public static String toPhred33String(byte[] q){
+        char[] res = new char[q.length];
+
+        for(int i = 0; i < q.length; i++)
+            res[i] = (char)(q[i] + '!');
+
+        return new String(res);
+    }
 }

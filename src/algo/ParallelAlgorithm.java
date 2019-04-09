@@ -8,6 +8,6 @@ import util.ReadFreq;
 import util.Read;
 import data.ParallelDataStructure;
 
-public interface ParallelAlgorithm{
+public interface ParallelAlgorithm extends Algo{
     public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage);
 }
