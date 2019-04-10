@@ -25,6 +25,8 @@ public class DeduplicateSAM{
         SamReader reader = SamReaderFactory.makeDefault().open(in);
         Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
 
+        int readCount = 0;
+
         for(SAMRecord record : reader){
             int start = record.getAlignmentStart();
 
@@ -43,6 +45,8 @@ public class DeduplicateSAM{
             }else{
                 umiRead.put(umi, new ReadFreq(read, 1));
             }
+
+            readCount++;
         }
 
         SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, out);
@@ -55,7 +59,14 @@ public class DeduplicateSAM{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
+        int alignPosCount = alignStarts.size();
+        float avgUMICount = 0.0f;
+        int maxUMICount = 0;
+        int dedupedCount = 0;
+
         for(Map.Entry<Integer, Map<BitSet, ReadFreq>> e : alignStarts.entrySet()){
+            avgUMICount += (float)e.getValue().size() / alignPosCount;
+            maxUMICount = Math.max(maxUMICount, e.getValue().size());
             List<Read> deduped;
 
             if(algo instanceof Algorithm)
@@ -63,10 +74,18 @@ public class DeduplicateSAM{
             else
                 deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, umiLength, k, percentage);
 
+            dedupedCount += deduped.size();
+
             for(Read read : deduped)
                 writer.addAlignment(((SAMRead)read).toSAMRecord());
         }
 
         writer.close();
+
+        System.out.println("Number of input reads\t" + readCount);
+        System.out.println("Number of unique alignment positions\t" + alignPosCount);
+        System.out.println("Average number of UMIs per alignment position\t" + avgUMICount);
+        System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
+        System.out.println("Number of reads after deduplicating\t" + dedupedCount);
     }
 }

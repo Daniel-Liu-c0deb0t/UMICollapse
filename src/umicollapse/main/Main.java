@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.io.File;
 
@@ -13,6 +14,10 @@ import umicollapse.algo.*;
 
 public class Main{
     public static void main(String[] args){
+        System.out.println("Arguments\t" + Arrays.toString(args));
+
+        long startTime = System.currentTimeMillis();
+
         if(args.length == 0)
             throw new IllegalArgumentException("No arguments specified!");
 
@@ -143,5 +148,7 @@ public class Main{
             DeduplicateSAM dedup = new DeduplicateSAM();
             dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage);
         }
+
+        System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " number of seconds!");
     }
 }

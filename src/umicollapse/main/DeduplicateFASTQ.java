@@ -25,6 +25,7 @@ public class DeduplicateFASTQ{
         Map<BitSet, ReadFreq> umiRead = new HashMap<>();
 
         int length = 0;
+        int readCount = 0;
 
         for(FastqRecord record : reader){
             length = record.getReadLength();
@@ -38,11 +39,15 @@ public class DeduplicateFASTQ{
             }else{
                 umiRead.put(umi, new ReadFreq(read, 1));
             }
+
+            readCount++;
         }
 
         reader.close();
 
         System.gc(); // attempt to clear up memory before deduplicating
+
+        int uniqueCount = umiRead.size();
 
         List<Read> deduped;
 
@@ -51,11 +56,17 @@ public class DeduplicateFASTQ{
         else
             deduped = ((ParallelAlgorithm)algo).apply(umiRead, ((ParallelDataStructure)data), length, k, percentage);
 
+        int dedupedCount = deduped.size();
+
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
 
         for(Read read : deduped)
             writer.write(((FASTQRead)read).toFASTQRecord(length, umiLength));
 
         writer.close();
+
+        System.out.println("Number of input reads\t" + readCount);
+        System.out.println("Number of unique reads\t" + uniqueCount);
+        System.out.println("Number of reads after deduplicating\t" + dedupedCount);
     }
 }
