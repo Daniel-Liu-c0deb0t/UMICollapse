@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
-import util.BitSet;
-import util.Utils;
-import data.*;
+import umicollapse.util.BitSet;
+import umicollapse.util.Utils;
+import umicollapse.data.*;
 
 public class TestDataStructures{
     public static void main(String[] args){

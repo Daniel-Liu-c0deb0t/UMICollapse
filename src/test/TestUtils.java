@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 
-import util.BitSet;
-import util.Utils;
-import util.Read;
-import util.ReadFreq;
+import umicollapse.util.BitSet;
+import umicollapse.util.Utils;
+import umicollapse.util.Read;
+import umicollapse.util.ReadFreq;
 
 public class TestUtils{
     public static boolean setMatches(Set<BitSet> a, Set<BitSet> b){

@@ -4,12 +4,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 
-import util.BitSet;
-import util.Utils;
-import util.Read;
-import util.ReadFreq;
-import algo.*;
-import data.*;
+import umicollapse.util.BitSet;
+import umicollapse.util.Utils;
+import umicollapse.util.Read;
+import umicollapse.util.ReadFreq;
+import umicollapse.algo.*;
+import umicollapse.data.*;
 
 public class BenchmarkTime{
     public static void main(String[] args){
