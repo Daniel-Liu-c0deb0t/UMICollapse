@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.BitSet;
 
+import util.BitSet;
 import util.Read;
 import static util.Utils.charSet;
 import static util.Utils.charEquals;
@@ -23,7 +23,7 @@ public class Combo implements DataStructure{
     @Override
     public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         Set<BitSet> res = new HashSet<>();
-        recursiveRemoveNear(umi, 0, k, maxFreq, new BitSet(), res, k);
+        recursiveRemoveNear(umi, 0, k, maxFreq, new BitSet(umiLength * Read.ENCODING_LENGTH), res, k);
         return res;
     }
 
@@ -33,7 +33,7 @@ public class Combo implements DataStructure{
 
         if(idx >= umiLength){
             if(umiFreq.containsKey(curr) && (k == K || umiFreq.get(curr) <= maxFreq)){
-                res.add((BitSet)curr.clone());
+                res.add(curr.clone());
                 umiFreq.remove(curr);
             }
 

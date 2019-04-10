@@ -2,7 +2,8 @@ package data;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.BitSet;
+
+import util.BitSet;
 
 public interface DataStructure extends Data{
     public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits);

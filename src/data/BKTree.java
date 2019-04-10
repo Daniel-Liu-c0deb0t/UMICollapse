@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 
+import util.BitSet;
 import static util.Utils.umiDist;
 
 public class BKTree implements DataStructure{

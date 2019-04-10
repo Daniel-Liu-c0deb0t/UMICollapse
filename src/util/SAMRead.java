@@ -2,7 +2,6 @@ package util;
 
 import htsjdk.samtools.SAMRecord;
 
-import java.util.BitSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 

@@ -2,10 +2,10 @@ package test;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 import java.util.Set;
 import java.util.HashSet;
 
+import util.BitSet;
 import util.Utils;
 import data.*;
 

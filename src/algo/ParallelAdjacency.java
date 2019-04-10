@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import util.BitSet;
 import util.Read;
 import util.ReadFreq;
 import util.UmiFreq;

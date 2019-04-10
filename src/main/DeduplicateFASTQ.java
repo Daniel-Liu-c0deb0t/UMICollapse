@@ -5,13 +5,13 @@ import htsjdk.samtools.fastq.FastqReader;
 import htsjdk.samtools.fastq.FastqWriter;
 import htsjdk.samtools.fastq.FastqWriterFactory;
 
-import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
 import java.io.File;
 
+import util.BitSet;
 import algo.*;
 import data.*;
 import merge.*;
@@ -42,7 +42,7 @@ public class DeduplicateFASTQ{
 
         reader.close();
 
-        System.gc();
+        System.gc(); // attempt to clear up memory before deduplicating
 
         List<Read> deduped;
 

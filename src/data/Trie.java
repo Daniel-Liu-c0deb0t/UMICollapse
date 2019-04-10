@@ -2,10 +2,10 @@ package data;
 
 import java.util.Set;
 import java.util.HashSet;
-import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
 
+import util.BitSet;
 import util.Read;
 import static util.Utils.charGet;
 import static util.Utils.charSet;
@@ -35,9 +35,9 @@ public class Trie implements DataStructure{
         Set<BitSet> res = new HashSet<>();
 
         if(maxFreq != Integer.MAX_VALUE) // always remove the queried UMI
-            recursiveRemoveNear(umi, 0, root, 0, Integer.MAX_VALUE, new BitSet(), res);
+            recursiveRemoveNear(umi, 0, root, 0, Integer.MAX_VALUE, new BitSet(umiLength * Read.ENCODING_LENGTH), res);
 
-        recursiveRemoveNear(umi, 0, root, k, maxFreq, new BitSet(), res);
+        recursiveRemoveNear(umi, 0, root, k, maxFreq, new BitSet(umiLength * Read.ENCODING_LENGTH), res);
         return res;
     }
 
@@ -46,7 +46,7 @@ public class Trie implements DataStructure{
             return;
 
         if(idx >= umiLength){
-            res.add((BitSet)currStr.clone());
+            res.add(currStr.clone());
             currNode.setExists(false);
             s.remove(currStr);
             return;

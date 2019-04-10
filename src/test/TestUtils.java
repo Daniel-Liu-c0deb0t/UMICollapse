@@ -3,11 +3,11 @@ package test;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 
+import util.BitSet;
 import util.Utils;
 import util.Read;
 import util.ReadFreq;

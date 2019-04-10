@@ -1,16 +1,12 @@
 package util;
 
-import java.util.BitSet;
-
 public class Utils{
     public static final int HASH_CONST = 31;
 
     // fast Hamming distance by using pairwise equidistant encodings for each nucleotide
     public static int umiDist(BitSet a, BitSet b){
-        BitSet c = (BitSet)a.clone();
-        c.xor(b);
         // divide by the pairwise Hamming distance in the encoding
-        return c.cardinality() / Read.ENCODING_DIST;
+        return a.bitCountXOR(b) / Read.ENCODING_DIST;
     }
 
     public static boolean charEquals(BitSet a, int idx, int b){
@@ -41,7 +37,7 @@ public class Utils{
     }
 
     public static BitSet toBitSet(String s){
-        BitSet res = new BitSet();
+        BitSet res = new BitSet(s.length() * Read.ENCODING_LENGTH);
 
         for(int i = 0; i < s.length(); i++)
             charSet(res, i, Read.ENCODING_MAP.get(s.charAt(i)));

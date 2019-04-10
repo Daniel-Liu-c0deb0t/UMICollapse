@@ -2,7 +2,8 @@ package data;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.BitSet;
+
+import util.BitSet;
 
 public interface ParallelDataStructure extends Data{
     // init can update global state

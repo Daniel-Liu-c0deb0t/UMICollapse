@@ -1,11 +1,11 @@
 package data;
 
+import util.BitSet;
 import static util.Utils.umiDist;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
-import java.util.BitSet;
 import java.util.Iterator;
 
 public class ParallelNaive implements ParallelDataStructure{

@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.BitSet;
 
+import util.BitSet;
 import static util.Utils.umiDist;
 
 public class FenwickBKTree implements DataStructure{

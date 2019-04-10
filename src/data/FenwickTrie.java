@@ -3,10 +3,10 @@ package data;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeMap;
-import java.util.BitSet;
 import java.util.Map;
 import java.util.HashMap;
 
+import util.BitSet;
 import util.Read;
 import static util.Utils.charGet;
 import static util.Utils.charSet;
@@ -50,7 +50,7 @@ public class FenwickTrie implements DataStructure{
             int freqIdx = freqs.size();
 
             for(; freqIdx > 0; freqIdx -= freqIdx & (-freqIdx))
-                recursiveRemoveNear(umi, 0, fenwick[freqIdx], 0, new BitSet(), res);
+                recursiveRemoveNear(umi, 0, fenwick[freqIdx], 0, new BitSet(umiLength * Read.ENCODING_LENGTH), res);
         }
 
         Map.Entry<Integer, Integer> floorEntry = freqs.floorEntry(maxFreq);
@@ -61,7 +61,7 @@ public class FenwickTrie implements DataStructure{
         int freqIdx = floorEntry.getValue() + 1;
 
         for(; freqIdx > 0; freqIdx -= freqIdx & (-freqIdx))
-            recursiveRemoveNear(umi, 0, fenwick[freqIdx], k, new BitSet(), res);
+            recursiveRemoveNear(umi, 0, fenwick[freqIdx], k, new BitSet(umiLength * Read.ENCODING_LENGTH), res);
 
         return res;
     }
@@ -71,7 +71,7 @@ public class FenwickTrie implements DataStructure{
             return;
 
         if(idx >= umiLength){
-            res.add((BitSet)currStr.clone());
+            res.add(currStr.clone());
             currNode.setExists(false);
             s.remove(currStr);
             return;

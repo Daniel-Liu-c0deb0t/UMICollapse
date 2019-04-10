@@ -8,11 +8,11 @@ import htsjdk.samtools.SAMFileWriterFactory;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 import java.util.List;
 
 import java.io.File;
 
+import util.BitSet;
 import data.*;
 import algo.*;
 import merge.*;

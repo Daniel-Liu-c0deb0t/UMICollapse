@@ -2,8 +2,6 @@ package util;
 
 import htsjdk.samtools.fastq.FastqRecord;
 
-import java.util.BitSet;
-
 import static util.Utils.toBitSet;
 import static util.Utils.toPhred33ByteArray;
 import static util.Utils.toPhred33String;

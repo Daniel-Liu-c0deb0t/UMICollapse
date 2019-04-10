@@ -1,7 +1,5 @@
 package util;
 
-import java.util.BitSet;
-
 public class UmiFreq{
     public BitSet umi;
     public ReadFreq readFreq;

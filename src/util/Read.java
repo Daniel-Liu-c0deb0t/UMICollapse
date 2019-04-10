@@ -2,7 +2,6 @@ package util;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 
 public abstract class Read{
     public static final int ENCODING_DIST = 2;

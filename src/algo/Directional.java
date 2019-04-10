@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Arrays;
 
+import util.BitSet;
 import data.DataStructure;
 import util.Read;
 import util.ReadFreq;

@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 
+import util.BitSet;
 import static util.Utils.charGet;
 import static util.Utils.charSet;
 import static util.Utils.umiDist;
@@ -25,7 +25,7 @@ public class SymmetricDelete implements DataStructure{
 
         m = new HashMap<BitSet, Set<Integer>>();
         arr = new BitSet[umiFreq.size()];
-        removed = new BitSet();
+        removed = new BitSet(umiFreq.size());
         int i = 0;
 
         for(BitSet umi : umiFreq.keySet()){
@@ -47,7 +47,7 @@ public class SymmetricDelete implements DataStructure{
         for(int i = 1; i < diff; i++)
             minMatch /= i + 1;
 
-        BitSet b = new BitSet();
+        BitSet b = new BitSet(umiLength * Read.ENCODING_LENGTH);
         Map<Integer, Integer> resCount = new HashMap<>();
 
         for(int i = 0; i <= maxEdits; i++)
@@ -91,7 +91,7 @@ public class SymmetricDelete implements DataStructure{
     }
 
     private void insert(BitSet umi, int idx){
-        BitSet b = new BitSet();
+        BitSet b = new BitSet(umiLength * Read.ENCODING_LENGTH);
 
         for(int i = 0; i <= maxEdits; i++)
             recursiveInsert(umi, idx, i, maxEdits - i, b, 0);
@@ -99,7 +99,7 @@ public class SymmetricDelete implements DataStructure{
 
     private void recursiveInsert(BitSet umi, int umiIdx, int idx, int k, BitSet curr, int currIdx){
         if(currIdx >= umiLength - maxEdits){
-            BitSet key = (BitSet)curr.clone();
+            BitSet key = curr.clone();
 
             if(!m.containsKey(key))
                 m.put(key, new HashSet<Integer>());

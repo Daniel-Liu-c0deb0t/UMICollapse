@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.BitSet;
 
+import util.BitSet;
 import static util.Utils.charGet;
 import static util.Utils.HASH_CONST;
 import static util.Utils.umiDist;
@@ -30,7 +30,7 @@ public class Ngram implements DataStructure{
 
         m = new HashMap<Interval, Set<Integer>>();
         arr = new BitSet[umiFreq.size()];
-        removed = new BitSet();
+        removed = new BitSet(umiFreq.size());
         int i = 0;
 
         for(BitSet umi : umiFreq.keySet()){
@@ -75,7 +75,7 @@ public class Ngram implements DataStructure{
 
                     if(dist <= k && (dist == 0 || umiFreq.get(arr[idx]) <= maxFreq)){
                         res.add(arr[idx]);
-                        removed.set(idx);
+                        removed.set(idx, true);
                         umiFreq.remove(arr[idx]);
                     }
                 }
