@@ -12,7 +12,7 @@ import static umicollapse.util.Utils.umiDist;
 
 public class Ngram implements DataStructure{
     private Map<BitSet, Integer> umiFreq;
-    private int umiLength, ngramSize, hashPow;
+    private int umiLength, ngramSize;
     private Map<Interval, Set<Integer>> m;
     private BitSet[] arr;
     private BitSet removed;
@@ -22,11 +22,6 @@ public class Ngram implements DataStructure{
         this.umiFreq = umiFreq;
         this.umiLength = umiLength;
         ngramSize = (int)Math.ceil((umiLength - maxEdits) / (maxEdits + 1.0f) + 1.0f) - 1;
-
-        hashPow = 1;
-
-        for(int i = 0; i < ngramSize - 1; i++)
-            hashPow *= HASH_CONST;
 
         m = new HashMap<Interval, Set<Integer>>();
         arr = new BitSet[umiFreq.size()];
@@ -43,40 +38,21 @@ public class Ngram implements DataStructure{
     // k <= maxEdits must be satisfied
     @Override
     public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        int minMatch = umiLength - ngramSize * (k + 1) + 1;
-        Map<Integer, Integer> count = new HashMap<>();
         Set<BitSet> res = new HashSet<>();
-        int hash = 0;
 
-        for(int i = 0; i <= umiLength - ngramSize; i++){
-            Interval in = new Interval(umi, i, i + ngramSize - 1);
-
-            if(i == 0){
-                for(int j = 0; j < ngramSize; j++)
-                    hash = hash * HASH_CONST + charGet(umi, j);
-            }else{
-                hash = (hash - charGet(umi, i) * hashPow) * HASH_CONST + charGet(umi, i + ngramSize - 1);
-            }
-
-            in.setHash(hash);
+        for(int i = 0; i < umiLength; i += ngramSize){
+            Interval in = new Interval(umi, i, Math.min(i + ngramSize - 1, umiLength - 1));
 
             if(m.containsKey(in)){
-                for(Integer j : m.get(in))
-                    count.put(j, count.getOrDefault(j, 0) + 1);
-            }
-        }
+                for(int j : m.get(in)){
+                    if(!removed.get(j)){
+                        int dist = umiDist(umi, arr[j]);
 
-        for(Map.Entry<Integer, Integer> e : count.entrySet()){
-            if(e.getValue() >= minMatch){
-                int idx = e.getKey();
-
-                if(!removed.get(idx)){
-                    int dist = umiDist(umi, arr[idx]);
-
-                    if(dist <= k && (dist == 0 || umiFreq.get(arr[idx]) <= maxFreq)){
-                        res.add(arr[idx]);
-                        removed.set(idx, true);
-                        umiFreq.remove(arr[idx]);
+                        if(dist <= k && (dist == 0 || umiFreq.get(arr[j]) <= maxFreq)){
+                            res.add(arr[j]);
+                            removed.set(j, true);
+                            umiFreq.remove(arr[j]);
+                        }
                     }
                 }
             }
@@ -86,19 +62,8 @@ public class Ngram implements DataStructure{
     }
 
     private void insert(BitSet umi, int idx){
-        int hash = 0;
-
-        for(int i = 0; i <= umiLength - ngramSize; i++){
-            Interval in = new Interval(umi, i, i + ngramSize - 1);
-
-            if(i == 0){
-                for(int j = 0; j < ngramSize; j++)
-                    hash = hash * HASH_CONST + charGet(umi, j);
-            }else{
-                hash = (hash - charGet(umi, i) * hashPow) * HASH_CONST + charGet(umi, i + ngramSize - 1);
-            }
-
-            in.setHash(hash);
+        for(int i = 0; i < umiLength; i += ngramSize){
+            Interval in = new Interval(umi, i, Math.min(i + ngramSize - 1, umiLength - 1));
 
             if(!m.containsKey(in))
                 m.put(in, new HashSet<Integer>());
@@ -140,14 +105,16 @@ public class Ngram implements DataStructure{
             this.s = s;
             this.lo = lo;
             this.hi = hi;
+
+            for(int i = 0; i < hi - lo + 1; i++)
+                hash = hash * HASH_CONST + get(i);
+
+            hash = hash * HASH_CONST + lo;
+            hash = hash * HASH_CONST + hi;
         }
 
         int get(int i){
             return charGet(s, lo + i);
-        }
-
-        void setHash(int hash){
-            this.hash = hash;
         }
 
         @Override
@@ -161,6 +128,9 @@ public class Ngram implements DataStructure{
                 return false;
 
             Interval other = (Interval)o;
+
+            if(lo != other.lo || hi != other.hi)
+                return false;
 
             for(int i = 0; i < hi - lo + 1; i++){
                 if(get(i) != other.get(i))

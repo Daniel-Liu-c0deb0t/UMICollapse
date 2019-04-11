@@ -22,13 +22,21 @@ import umicollapse.util.ReadFreq;
 public class DeduplicateFASTQ{
     public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
         FastqReader reader = new FastqReader(in);
-        Map<BitSet, ReadFreq> umiRead = new HashMap<>();
+        Map<Integer, Map<BitSet, ReadFreq>> readLength = new HashMap<>();
 
-        int length = 0;
         int readCount = 0;
 
         for(FastqRecord record : reader){
-            length = record.getReadLength();
+            if(record.getReadString().toUpperCase().contains("N")) // cannot currently handle undetermined nucleotides
+                continue;
+
+            int length = record.getReadLength();
+
+            if(!readLength.containsKey(length))
+                readLength.put(length, new HashMap<BitSet, ReadFreq>());
+
+            Map<BitSet, ReadFreq> umiRead = readLength.get(length);
+
             Read read = new FASTQRead(record.getReadName(), record.getReadString(), record.getBaseQualityString());
             BitSet umi = read.getUMI();
 
@@ -47,21 +55,24 @@ public class DeduplicateFASTQ{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
-        int uniqueCount = umiRead.size();
-
-        List<Read> deduped;
-
-        if(algo instanceof Algorithm)
-            deduped = ((Algorithm)algo).apply(umiRead, ((DataStructure)data), length, k, percentage);
-        else
-            deduped = ((ParallelAlgorithm)algo).apply(umiRead, ((ParallelDataStructure)data), length, k, percentage);
-
-        int dedupedCount = deduped.size();
-
+        int uniqueCount = 0;
+        int dedupedCount = 0;
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
 
-        for(Read read : deduped)
-            writer.write(((FASTQRead)read).toFASTQRecord(length, umiLength));
+        for(Map.Entry<Integer, Map<BitSet, ReadFreq>> e : readLength.entrySet()){
+            uniqueCount += e.getValue().size();
+            List<Read> deduped;
+
+            if(algo instanceof Algorithm)
+                deduped = ((Algorithm)algo).apply(e.getValue(), ((DataStructure)data), e.getKey(), k, percentage);
+            else
+                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), ((ParallelDataStructure)data), e.getKey(), k, percentage);
+
+            dedupedCount += deduped.size();
+
+            for(Read read : deduped)
+                writer.write(((FASTQRead)read).toFASTQRecord(e.getKey(), umiLength));
+        }
 
         writer.close();
 

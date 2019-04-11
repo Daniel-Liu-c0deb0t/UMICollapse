@@ -30,7 +30,9 @@ public class TestUtils{
             ReadFreq r = new ReadFreq(null, (int)(maxFreq * (1.0f - 0.3f * rand.nextFloat())));
             res.put(Utils.toBitSet(umi), r);
 
-            for(int j = 0; j < numDup; j++){
+            int randNumDup = rand.nextBoolean() ? 0 : (rand.nextInt(numDup) + 1);
+
+            for(int j = 0; j < randNumDup; j++){
                 // freq within bottom (70% * percentage) of maxFreq
                 r = new ReadFreq(null, (int)(maxFreq * (0.7f * rand.nextFloat() * percentage)));
                 res.put(Utils.toBitSet(randEdits(umi, k, rand)), r);

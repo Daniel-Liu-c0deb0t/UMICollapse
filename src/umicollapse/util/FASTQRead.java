@@ -49,6 +49,6 @@ public class FASTQRead extends Read{
     }
 
     public FastqRecord toFASTQRecord(int length, int umiLength){
-        return new FastqRecord(desc, Utils.toString(seq, length).substring(umiLength), "", Utils.toPhred33String(qual));
+        return new FastqRecord(desc, Utils.toString(seq, length).substring(umiLength), "", Utils.toPhred33String(qual).substring(umiLength));
     }
 }
