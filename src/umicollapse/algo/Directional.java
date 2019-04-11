@@ -41,7 +41,7 @@ public class Directional implements Algorithm{
     }
 
     private void visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, int k, float percentage){
-        Set<BitSet> c = data.removeNear(u, k, (int)(percentage * reads.get(u).freq));
+        Set<BitSet> c = data.removeNear(u, k, (int)(percentage * (reads.get(u).freq + 1)));
 
         for(BitSet v : c){
             if(u.equals(v))

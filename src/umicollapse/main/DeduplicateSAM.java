@@ -25,16 +25,21 @@ public class DeduplicateSAM{
     public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
+        Map<Integer, Map<BitSet, ReadFreq>> alignEnds = new HashMap<>();
 
         int readCount = 0;
 
         for(SAMRecord record : reader){
-            int start = record.getAlignmentStart();
+            if(record.getReadUnmappedFlag()) // discard unmapped reads
+                continue;
 
-            if(!alignStarts.containsKey(start))
-                alignStarts.put(start, new HashMap<BitSet, ReadFreq>());
+            int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
+            Map<Integer, Map<BitSet, ReadFreq>> align = record.getReadNegativeStrandFlag() ? alignEnds : alignStarts;
 
-            Map<BitSet, ReadFreq> umiRead = alignStarts.get(start);
+            if(!align.containsKey(start))
+                align.put(start, new HashMap<BitSet, ReadFreq>());
+
+            Map<BitSet, ReadFreq> umiRead = align.get(start);
 
             Read read = new SAMRead(record);
             BitSet umi = read.getUMI();
@@ -60,12 +65,28 @@ public class DeduplicateSAM{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
-        int alignPosCount = alignStarts.size();
+        int alignPosCount = alignStarts.size() + alignEnds.size();
         float avgUMICount = 0.0f;
         int maxUMICount = 0;
         int dedupedCount = 0;
 
         for(Map.Entry<Integer, Map<BitSet, ReadFreq>> e : alignStarts.entrySet()){
+            avgUMICount += (float)e.getValue().size() / alignPosCount;
+            maxUMICount = Math.max(maxUMICount, e.getValue().size());
+            List<Read> deduped;
+
+            if(algo instanceof Algorithm)
+                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, umiLength, k, percentage);
+            else
+                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, umiLength, k, percentage);
+
+            dedupedCount += deduped.size();
+
+            for(Read read : deduped)
+                writer.addAlignment(((SAMRead)read).toSAMRecord());
+        }
+
+        for(Map.Entry<Integer, Map<BitSet, ReadFreq>> e : alignEnds.entrySet()){
             avgUMICount += (float)e.getValue().size() / alignPosCount;
             maxUMICount = Math.max(maxUMICount, e.getValue().size());
             List<Read> deduped;

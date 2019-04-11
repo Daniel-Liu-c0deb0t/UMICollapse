@@ -38,7 +38,7 @@ public class ParallelDirectional implements ParallelAlgorithm{
             adjIdx.add(null);
 
         IntStream.range(0, freq.length).parallel()
-            .forEach(i -> adjIdx.set(i, data.near(freq[i].umi, k, (int)(percentage * freq[i].readFreq.freq))));
+            .forEach(i -> adjIdx.set(i, data.near(freq[i].umi, k, (int)(percentage * (freq[i].readFreq.freq + 1)))));
 
         Map<BitSet, Set<BitSet>> adj = new HashMap<>();
 
