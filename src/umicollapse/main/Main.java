@@ -149,6 +149,6 @@ public class Main{
             dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage);
         }
 
-        System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " number of seconds!");
+        System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds!");
     }
 }

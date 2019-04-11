@@ -1,0 +1,2 @@
+Main-Class: umicollapse.main.Main
+Class-Path: lib/htsjdk-2.19.0.jar

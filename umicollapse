@@ -1,1 +1,1 @@
-java -cp lib/htsjdk-2.19.0.jar -Xms4G -Xmx4G -jar umicollapse.jar $@
+java -Xms4G -Xmx4G -Xss10M -jar umicollapse.jar $@

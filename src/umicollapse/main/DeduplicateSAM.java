@@ -2,6 +2,7 @@ package umicollapse.main;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
+import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
@@ -22,7 +23,7 @@ import umicollapse.util.ReadFreq;
 
 public class DeduplicateSAM{
     public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
-        SamReader reader = SamReaderFactory.makeDefault().open(in);
+        SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
 
         int readCount = 0;
