@@ -25,6 +25,13 @@ public class Utils{
         return a;
     }
 
+    private static BitSet charSetNBit(BitSet a, int idx){
+        for(int i = 0; i < Read.ENCODING_LENGTH; i++)
+            a.setNBit(idx * Read.ENCODING_LENGTH + i, true);
+
+        return a;
+    }
+
     public static int charGet(BitSet a, int idx){
         int res = 0;
 
@@ -39,8 +46,12 @@ public class Utils{
     public static BitSet toBitSet(String s){
         BitSet res = new BitSet(s.length() * Read.ENCODING_LENGTH);
 
-        for(int i = 0; i < s.length(); i++)
+        for(int i = 0; i < s.length(); i++){
             charSet(res, i, Read.ENCODING_MAP.get(s.charAt(i)));
+
+            if(s.charAt(i) == Read.UNDETERMINED_CHAR)
+                charSetNBit(res, i);
+        }
 
         return res;
     }

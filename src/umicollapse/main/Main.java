@@ -73,7 +73,7 @@ public class Main{
         String dataStr = "fenwickbktree";
         String mergeStr = "avgqual";
         int k = 1;
-        int umiLength = 10;
+        int umiLength = -1;
         float percentage = 0.5f;
 
         boolean parallel = false;

@@ -21,15 +21,15 @@ import umicollapse.util.ReadFreq;
 
 public class DeduplicateFASTQ{
     public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
+        if(umiLength == -1)
+            umiLength = 0;
+
         FastqReader reader = new FastqReader(in);
         Map<Integer, Map<BitSet, ReadFreq>> readLength = new HashMap<>();
 
         int readCount = 0;
 
         for(FastqRecord record : reader){
-            if(record.getReadString().toUpperCase().contains("N")) // cannot currently handle undetermined nucleotides
-                continue;
-
             int length = record.getReadLength();
 
             if(!readLength.containsKey(length))

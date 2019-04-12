@@ -44,6 +44,11 @@ public class FASTQRead extends Read{
     }
 
     @Override
+    public int getUMILength(){
+        return -1; // should never be called!
+    }
+
+    @Override
     public int getAvgQual(){
         return avgQual;
     }

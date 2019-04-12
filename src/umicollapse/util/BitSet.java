@@ -6,6 +6,7 @@ public class BitSet{
     private static final int CHUNK_SIZE = 64;
 
     private long[] bits;
+    private long[] nBits;
     private boolean recalcHash;
     private int hash;
 
@@ -36,18 +37,22 @@ public class BitSet{
         bits[i] = bit ? (bits[i] | (1L << j)) : (bits[i] & ~(1L << j));
     }
 
+    public void setNBit(int idx, boolean bit){
+        if(nBits == null)
+            nBits = new long[bits.length];
+
+        int i = idx / CHUNK_SIZE;
+        int j = idx % CHUNK_SIZE;
+        nBits[i] = bit ? (nBits[i] | (1L << j)) : (nBits[i] & ~(1L << j));
+    }
+
     public int bitCountXOR(BitSet o){
-        int length = Math.min(bits.length, o.bits.length);
         int res = 0;
 
-        for(int i = 0; i < length; i++)
-            res += Long.bitCount(bits[i] ^ o.bits[i]);
-
-        for(int i = length; i < bits.length; i++)
-            res += Long.bitCount(bits[i]);
-
-        for(int i = length; i < o.bits.length; i++)
-            res += Long.bitCount(o.bits[i]);
+        for(int i = 0; i < bits.length; i++){
+            long xor = (nBits == null ? 0L : nBits[i]) ^ (o.nBits == null ? 0L : o.nBits[i]);
+            res += Long.bitCount(xor | (bits[i] ^ o.bits[i])) - Long.bitCount(xor) / Read.ENCODING_LENGTH;
+        }
 
         return res;
     }

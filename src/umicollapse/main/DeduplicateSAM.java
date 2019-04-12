@@ -44,6 +44,9 @@ public class DeduplicateSAM{
             Read read = new SAMRead(record);
             BitSet umi = read.getUMI();
 
+            if(umiLength == -1)
+                umiLength = read.getUMILength();
+
             if(umiRead.containsKey(umi)){
                 ReadFreq prev = umiRead.get(umi);
                 prev.read = merge.merge(read, prev.read);
