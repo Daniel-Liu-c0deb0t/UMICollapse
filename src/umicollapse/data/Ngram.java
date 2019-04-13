@@ -12,27 +12,20 @@ import static umicollapse.util.Utils.umiDist;
 
 public class Ngram implements DataStructure{
     private Map<BitSet, Integer> umiFreq;
-    private int umiLength, ngramSize;
-    private Map<Interval, Set<Integer>> m;
-    private BitSet[] arr;
-    private BitSet removed;
+    private int umiLength, ngramSize, maxEdits;
+    private Map<Interval, Set<BitSet>> m;
 
     @Override
     public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
         this.umiFreq = umiFreq;
         this.umiLength = umiLength;
-        ngramSize = (int)Math.ceil((umiLength - maxEdits) / (maxEdits + 1.0f) + 1.0f) - 1;
+        this.maxEdits = maxEdits;
+        ngramSize = umiLength / (maxEdits + 1);
 
-        m = new HashMap<Interval, Set<Integer>>();
-        arr = new BitSet[umiFreq.size()];
-        removed = new BitSet(umiFreq.size());
-        int i = 0;
+        m = new HashMap<Interval, Set<BitSet>>();
 
-        for(BitSet umi : umiFreq.keySet()){
-            arr[i] = umi;
-            insert(umi, i);
-            i++;
-        }
+        for(BitSet umi : umiFreq.keySet())
+            insert(umi);
     }
 
     // k <= maxEdits must be satisfied
@@ -40,18 +33,17 @@ public class Ngram implements DataStructure{
     public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
         Set<BitSet> res = new HashSet<>();
 
-        for(int i = 0; i < umiLength; i += ngramSize){
-            Interval in = new Interval(umi, i, Math.min(i + ngramSize - 1, umiLength - 1));
+        for(int i = 0; i < maxEdits + 1; i++){
+            Interval in = new Interval(umi, i * ngramSize, i == maxEdits ? (umiLength - 1) : ((i + 1) * ngramSize - 1));
 
             if(m.containsKey(in)){
-                for(int j : m.get(in)){
-                    if(!removed.get(j)){
-                        int dist = umiDist(umi, arr[j]);
+                for(BitSet s : m.get(in)){
+                    if(umiFreq.containsKey(s)){
+                        int dist = umiDist(umi, s);
 
-                        if(dist <= k && (dist == 0 || umiFreq.get(arr[j]) <= maxFreq)){
-                            res.add(arr[j]);
-                            removed.set(j, true);
-                            umiFreq.remove(arr[j]);
+                        if(dist <= k && (dist == 0 || umiFreq.get(s) <= maxFreq)){
+                            res.add(s);
+                            umiFreq.remove(s);
                         }
                     }
                 }
@@ -61,14 +53,14 @@ public class Ngram implements DataStructure{
         return res;
     }
 
-    private void insert(BitSet umi, int idx){
-        for(int i = 0; i < umiLength; i += ngramSize){
-            Interval in = new Interval(umi, i, Math.min(i + ngramSize - 1, umiLength - 1));
+    private void insert(BitSet umi){
+        for(int i = 0; i < maxEdits + 1; i++){
+            Interval in = new Interval(umi, i * ngramSize, i == maxEdits ? (umiLength - 1) : ((i + 1) * ngramSize - 1));
 
             if(!m.containsKey(in))
-                m.put(in, new HashSet<Integer>());
+                m.put(in, new HashSet<BitSet>());
 
-            m.get(in).add(idx);
+            m.get(in).add(umi);
         }
     }
 
@@ -81,11 +73,12 @@ public class Ngram implements DataStructure{
     public Map<String, Float> stats(){
         Map<String, Float> res = new HashMap<>();
         res.put("num n-grams", (float)m.size());
+        res.put("n-grams size", (float)ngramSize);
 
         int maxNgrams = 0;
         float avgNgrams = 0.0f;
 
-        for(Map.Entry<Interval, Set<Integer>> e : m.entrySet()){
+        for(Map.Entry<Interval, Set<BitSet>> e : m.entrySet()){
             int size = e.getValue().size();
             maxNgrams = Math.max(maxNgrams, size);
             avgNgrams += (float)size / m.size();
