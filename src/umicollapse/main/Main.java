@@ -70,7 +70,7 @@ public class Main{
         File in = null;
         File out = null;
         String algoStr = "dir";
-        String dataStr = "fenwickbktree";
+        String dataStr = "bktree";
         String mergeStr = "avgqual";
         int k = 1;
         int umiLength = -1;
