@@ -11,6 +11,7 @@ public abstract class Read{
     public static final char[] ALPHABET = {'A', 'T', 'C', 'G', 'N'};
     public static final int UNDETERMINED = 0b100;
     public static final char UNDETERMINED_CHAR = 'N';
+    public static final int ANY = 0b111;
 
     static{
         ENCODING_MAP.put('A', 0b000);

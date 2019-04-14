@@ -14,9 +14,7 @@ import static umicollapse.util.Utils.umiDist;
 public class SymmetricDelete implements DataStructure{
     private Map<BitSet, Integer> umiFreq;
     private int umiLength, maxEdits;
-    private Map<BitSet, Set<Integer>> m;
-    private BitSet[] arr;
-    private BitSet removed;
+    private Map<BitSet, Set<BitSet>> m;
 
     @Override
     public void init(Map<BitSet, Integer> umiFreq, int umiLength, int maxEdits){
@@ -24,96 +22,92 @@ public class SymmetricDelete implements DataStructure{
         this.umiLength = umiLength;
         this.maxEdits = maxEdits;
 
-        m = new HashMap<BitSet, Set<Integer>>();
-        arr = new BitSet[umiFreq.size()];
-        removed = new BitSet(umiFreq.size());
-        int i = 0;
+        m = new HashMap<BitSet, Set<BitSet>>();
 
-        for(BitSet umi : umiFreq.keySet()){
-            arr[i] = umi;
-            insert(umi, i);
-            i++;
-        }
+        for(BitSet umi : umiFreq.keySet())
+            insert(umi);
     }
 
     // k <= maxEdits must be satisfied
     @Override
     public Set<BitSet> removeNear(BitSet umi, int k, int maxFreq){
-        int diff = maxEdits - k;
-        int minMatch = 1;
-
-        for(int i = 0; i < diff; i++)
-            minMatch *= umiLength - k - i;
-
-        for(int i = 1; i < diff; i++)
-            minMatch /= i + 1;
-
         BitSet b = new BitSet(umiLength * Read.ENCODING_LENGTH);
-        Map<Integer, Integer> resCount = new HashMap<>();
-
-        for(int i = 0; i <= maxEdits; i++)
-            recursiveRemoveNear(umi, i, maxEdits - i, b, 0, resCount);
-
         Set<BitSet> res = new HashSet<>();
 
-        for(Map.Entry<Integer, Integer> e : resCount.entrySet()){
-            if(e.getValue() >= minMatch){
-                int idx = e.getKey();
-
-                if(!removed.get(idx)){
-                    int dist = umiDist(umi, arr[idx]);
-
-                    if(dist <= k && (dist == 0 || umiFreq.get(arr[idx]) <= maxFreq)){
-                        res.add(arr[idx]);
-                        removed.set(idx, true);
-                        umiFreq.remove(arr[idx]);
-                    }
-                }
-            }
+        for(int i = 0; i <= maxEdits; i++){
+            recursiveRemoveNear(umi, i, maxEdits - i, k, maxFreq, b, res);
+            charSet(b, i, Read.ANY);
         }
 
         return res;
     }
 
-    private void recursiveRemoveNear(BitSet umi, int idx, int currK, BitSet curr, int currIdx, Map<Integer, Integer> resCount){
-        if(currIdx >= umiLength - maxEdits){
+    private void recursiveRemoveNear(BitSet umi, int idx, int k, int maxK, int maxFreq, BitSet curr, Set<BitSet> res){
+        if(idx > umiLength)
+            return;
+
+        if(idx == umiLength){
             if(m.containsKey(curr)){
-                for(Integer i : m.get(curr))
-                    resCount.put(i, resCount.getOrDefault(i, 0) + 1);
+                for(BitSet val : m.get(curr)){
+                    if(umiFreq.containsKey(val)){
+                        if(maxK == maxEdits){
+                            if(umiFreq.get(val) <= maxFreq || umi.equals(val)){
+                                res.add(val);
+                                umiFreq.remove(val);
+                            }
+                        }else{
+                            int dist = umiDist(umi, val);
+
+                            if(dist <= maxK && (dist == 0 || umiFreq.get(val) <= maxFreq)){
+                                res.add(val);
+                                umiFreq.remove(val);
+                            }
+                        }
+                    }
+                }
             }
 
             return;
         }
 
-        charSet(curr, currIdx, charGet(umi, idx));
+        charSet(curr, idx, charGet(umi, idx));
 
-        for(int i = 0; i <= currK; i++)
-            recursiveRemoveNear(umi, idx + 1 + i, currK - i, curr, currIdx + 1, resCount);
+        for(int i = 0; i <= k; i++){
+            recursiveRemoveNear(umi, idx + 1 + i, k - i, maxK, maxFreq, curr, res);
+            charSet(curr, idx + 1 + i, Read.ANY);
+        }
     }
 
-    private void insert(BitSet umi, int idx){
+    private void insert(BitSet umi){
         BitSet b = new BitSet(umiLength * Read.ENCODING_LENGTH);
 
-        for(int i = 0; i <= maxEdits; i++)
-            recursiveInsert(umi, idx, i, maxEdits - i, b, 0);
+        for(int i = 0; i <= maxEdits; i++){
+            recursiveInsert(umi, i, maxEdits - i, b);
+            charSet(b, i, Read.ANY);
+        }
     }
 
-    private void recursiveInsert(BitSet umi, int umiIdx, int idx, int k, BitSet curr, int currIdx){
-        if(currIdx >= umiLength - maxEdits){
+    private void recursiveInsert(BitSet umi, int idx, int k, BitSet curr){
+        if(idx > umiLength)
+            return;
+
+        if(idx == umiLength){
             BitSet key = curr.clone();
 
             if(!m.containsKey(key))
-                m.put(key, new HashSet<Integer>());
+                m.put(key, new HashSet<BitSet>());
 
-            m.get(key).add(umiIdx);
+            m.get(key).add(umi);
 
             return;
         }
 
-        charSet(curr, currIdx, charGet(umi, idx));
+        charSet(curr, idx, charGet(umi, idx));
 
-        for(int i = 0; i <= k; i++)
-            recursiveInsert(umi, umiIdx, idx + 1 + i, k - i, curr, currIdx + 1);
+        for(int i = 0; i <= k; i++){
+            recursiveInsert(umi, idx + 1 + i, k - i, curr);
+            charSet(curr, idx + 1 + i, Read.ANY);
+        }
     }
 
     @Override
@@ -129,7 +123,7 @@ public class SymmetricDelete implements DataStructure{
         int maxSubseq = 0;
         float avgSubseq = 0.0f;
 
-        for(Map.Entry<BitSet, Set<Integer>> e : m.entrySet()){
+        for(Map.Entry<BitSet, Set<BitSet>> e : m.entrySet()){
             int size = e.getValue().size();
             maxSubseq = Math.max(maxSubseq, size);
             avgSubseq += (float)size / m.size();
