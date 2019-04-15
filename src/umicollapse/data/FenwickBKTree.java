@@ -65,14 +65,14 @@ public class FenwickBKTree implements DataStructure{
 
     private void recursiveRemoveNear(BitSet umi, Node curr, int k, Set<BitSet> res){
         int dist = umiDist(umi, curr.getUMI());
+        boolean exists = s.contains(curr.getUMI());
 
-        if(dist <= k && curr.exists()){
+        if(dist <= k && exists){
             res.add(curr.getUMI());
-            curr.setExists(false);
             s.remove(curr.getUMI());
         }
 
-        boolean subtreeExists = curr.exists();
+        boolean subtreeExists = exists;
 
         if(curr.hasNodes()){
             int lo = Math.max(dist - k, 0);
@@ -159,13 +159,12 @@ public class FenwickBKTree implements DataStructure{
 
     private static class Node{
         private BitSet umi;
-        private boolean exists, subtreeExists;
+        private boolean subtreeExists;
         private Node[] c;
 
         Node(BitSet umi){
             this.c = null;
             this.umi = umi;
-            this.exists = true;
             this.subtreeExists = true;
         }
 
@@ -183,14 +182,6 @@ public class FenwickBKTree implements DataStructure{
 
         BitSet getUMI(){
             return umi;
-        }
-
-        boolean exists(){
-            return exists;
-        }
-
-        void setExists(boolean exists){
-            this.exists = exists;
         }
 
         void setSubtreeExists(boolean subtreeExists){

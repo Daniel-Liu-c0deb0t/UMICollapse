@@ -18,8 +18,8 @@ public class TestDataStructures{
             new SymmetricDelete(),
             new Trie(),
             new BKTree(),
-            new FenwickTrie(),
-            new FenwickBKTree()
+            new FenwickBKTree(),
+            new NgramBKTree()
         };
 
         String[] s1 = {"AAAA", "AAAT", "CCCC", "CCCG", "TTTT"};

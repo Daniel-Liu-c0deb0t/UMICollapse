@@ -96,4 +96,35 @@ public class BitSet{
 
         return hash;
     }
+
+    @Override
+    public String toString(){
+        StringBuilder res = new StringBuilder();
+
+        for(int i = 0; i < bits.length; i++){
+            String s = Long.toBinaryString(bits[i]);
+            res.append(reverse(s));
+            res.append(make('0', CHUNK_SIZE - s.length()));
+        }
+
+        return res.toString();
+    }
+
+    private String make(char c, int n){
+        char[] res = new char[n];
+
+        for(int i = 0; i < n; i++)
+            res[i] = c;
+
+        return new String(res);
+    }
+
+    private String reverse(String s){
+        char[] res = new char[s.length()];
+
+        for(int i = 0; i < s.length(); i++)
+            res[i] = s.charAt(s.length() - 1 - i);
+
+        return new String(res);
+    }
 }
