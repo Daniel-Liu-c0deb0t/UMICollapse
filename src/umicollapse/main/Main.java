@@ -54,10 +54,10 @@ public class Main{
         d1.put("trie", Trie.class);
         d1.put("bktree", BKTree.class);
         d1.put("ngrambktree", NgramBKTree.class);
-        d1.put("fenwicktrie", FenwickTrie.class);
+        d1.put("fenwickbktree", FenwickBKTree.class);
         data.put(false, d1);
         Map<String, Class<? extends Data>> d2 = new HashMap<>();
-        d2.put("fenwicktrie", ParallelFenwickTrie.class);
+        d2.put("fenwickbktree", ParallelFenwickBKTree.class);
         data.put(true, d2);
 
         Map<String, Class<? extends Merge>> merge = new HashMap<>();
@@ -69,8 +69,8 @@ public class Main{
         File in = null;
         File out = null;
         String algoStr = "dir";
-        String dataStr = "bktree";
-        String mergeStr = "avgqual";
+        String dataStr = "ngrambktree";
+        String mergeStr = "mapqual";
         int k = 1;
         int umiLength = -1;
         float percentage = 0.5f;
