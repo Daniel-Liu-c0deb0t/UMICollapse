@@ -53,6 +53,7 @@ public class Main{
         d1.put("delete", SymmetricDelete.class);
         d1.put("trie", Trie.class);
         d1.put("bktree", BKTree.class);
+        d1.put("ngrambktree", NgramBKTree.class);
         d1.put("fenwicktrie", FenwickTrie.class);
         data.put(false, d1);
         Map<String, Class<? extends Data>> d2 = new HashMap<>();
