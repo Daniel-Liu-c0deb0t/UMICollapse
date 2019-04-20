@@ -4,13 +4,14 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 
 import umicollapse.util.BitSet;
 import static umicollapse.util.Utils.charGet;
 import static umicollapse.util.Utils.HASH_CONST;
 import static umicollapse.util.Utils.umiDist;
 
-public class NgramBKTree implements DataStructure{
+public class SortNgramBKTree implements DataStructure{
     private Map<BitSet, Integer> umiFreq;
     private int umiLength, ngramSize, maxEdits;
     private Map<Interval, Node> m;
@@ -24,8 +25,19 @@ public class NgramBKTree implements DataStructure{
 
         m = new HashMap<Interval, Node>();
 
+        Freq[] freqs = new Freq[umiFreq.size()];
+        int idx = 0;
+
         for(Map.Entry<BitSet, Integer> e : umiFreq.entrySet())
-            insert(e.getKey(), e.getValue());
+            freqs[idx++] = new Freq(e.getKey(), e.getValue());
+
+        Arrays.sort(freqs, (a, b) -> a.freq - b.freq);
+
+        for(int i = 0; i < freqs.length; i++){
+            BitSet umi = freqs[i].umi;
+            int freq = freqs[i].freq;
+            insert(umi, freq);
+        }
     }
 
     // k <= maxEdits must be satisfied
@@ -228,6 +240,16 @@ public class NgramBKTree implements DataStructure{
             }
 
             return true;
+        }
+    }
+
+    private static class Freq{
+        BitSet umi;
+        int freq;
+
+        Freq(BitSet umi, int freq){
+            this.umi = umi;
+            this.freq = freq;
         }
     }
 }
