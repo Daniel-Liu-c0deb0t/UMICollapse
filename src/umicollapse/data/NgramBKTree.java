@@ -54,7 +54,7 @@ public class NgramBKTree implements DataStructure{
             Interval in = new Interval(umi, i * ngramSize, i == maxEdits ? (umiLength - 1) : ((i + 1) * ngramSize - 1));
 
             if(m.containsKey(in)){
-                int length = (i == maxEdits ? (umiLength - 1) : ((i + 1) * ngramSize - 1)) - i * ngramSize + 1;
+                int length = umiLength - ((i == maxEdits ? (umiLength - 1) : ((i + 1) * ngramSize - 1)) - i * ngramSize + 1);
                 insertBKTree(m.get(in), umi, length, freq);
             }else{
                 m.put(in, new Node(umi, freq));
