@@ -76,6 +76,8 @@ public class DeduplicateSAM{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
+        System.out.println("Done reading input file into memory!");
+
         int alignPosCount = alignStarts.size() + alignEnds.size();
         avgUMICount = 0.0f;
         maxUMICount = 0;

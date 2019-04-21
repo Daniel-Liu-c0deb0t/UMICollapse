@@ -63,6 +63,8 @@ public class DeduplicateFASTQ{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
+        System.out.println("Done reading input file into memory!");
+
         uniqueCount = 0;
         dedupedCount = 0;
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
