@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
+import java.util.stream.Stream;
+
 import java.io.File;
 
 import umicollapse.util.BitSet;
@@ -20,7 +22,13 @@ import umicollapse.util.FASTQRead;
 import umicollapse.util.ReadFreq;
 
 public class DeduplicateFASTQ{
-    public void deduplicateAndMerge(File in, File out, Algo algo, Data data, Merge merge, int umiLength, int k, float percentage){
+    private int uniqueCount;
+    private int dedupedCount;
+    private int umiLength;
+
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel){
+        umiLength = umiLengthParam;
+
         if(umiLength == -1)
             umiLength = 0;
 
@@ -55,24 +63,37 @@ public class DeduplicateFASTQ{
 
         System.gc(); // attempt to clear up memory before deduplicating
 
-        int uniqueCount = 0;
-        int dedupedCount = 0;
+        uniqueCount = 0;
+        dedupedCount = 0;
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
+        Object lock = new Object();
 
-        for(Map.Entry<Integer, Map<BitSet, ReadFreq>> e : readLength.entrySet()){
-            uniqueCount += e.getValue().size();
+        Stream<Map.Entry<Integer, Map<BitSet, ReadFreq>>> stream = parallel ?
+            readLength.entrySet().parallelStream() : readLength.entrySet().stream();
+
+        stream.forEach(e -> {
             List<Read> deduped;
+            Data data = null;
+
+            try{
+                data = dataClass.getDeclaredConstructor().newInstance();
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
 
             if(algo instanceof Algorithm)
                 deduped = ((Algorithm)algo).apply(e.getValue(), ((DataStructure)data), e.getKey(), k, percentage);
             else
                 deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), ((ParallelDataStructure)data), e.getKey(), k, percentage);
 
-            dedupedCount += deduped.size();
+            synchronized(lock){
+                uniqueCount += e.getValue().size();
+                dedupedCount += deduped.size();
 
-            for(Read read : deduped)
-                writer.write(((FASTQRead)read).toFASTQRecord(e.getKey(), umiLength));
-        }
+                for(Read read : deduped)
+                    writer.write(((FASTQRead)read).toFASTQRecord(e.getKey(), umiLength));
+            }
+        });
 
         writer.close();
 

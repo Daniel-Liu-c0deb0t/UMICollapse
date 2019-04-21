@@ -77,7 +77,8 @@ public class Main{
         int umiLength = -1;
         float percentage = 0.5f;
 
-        boolean parallel = false;
+        boolean parallelData = false;
+        boolean parallelAlign = false;
 
         String s = "-k";
 
@@ -112,7 +113,16 @@ public class Main{
 
         if(m.containsKey(s)){
             System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (Integer.parseInt(m.get(s).get(0)) - 1) + "");
-            parallel = true;
+            parallelAlign = true;
+            parallelData = false;
+        }
+
+        s = "-T";
+
+        if(m.containsKey(s)){
+            System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (Integer.parseInt(m.get(s).get(0)) - 1) + "");
+            parallelData = true;
+            parallelAlign = false;
         }
 
         s = "--algo";
@@ -131,12 +141,13 @@ public class Main{
             mergeStr = m.get(s).get(0);
 
         Algo a = null;
-        Data d = null;
+        Class<? extends Data> d = null;
         Merge mAlgo = null;
 
+        d = data.get(parallelData).get(dataStr);
+
         try{
-            a = algo.get(parallel).get(algoStr).getDeclaredConstructor().newInstance();
-            d = data.get(parallel).get(dataStr).getDeclaredConstructor().newInstance();
+            a = algo.get(parallelData).get(algoStr).getDeclaredConstructor().newInstance();
             mAlgo = merge.get(mergeStr).getDeclaredConstructor().newInstance();
         }catch(Exception e){
             e.printStackTrace();
@@ -144,10 +155,10 @@ public class Main{
 
         if(mode.equals("fastq")){
             DeduplicateFASTQ dedup = new DeduplicateFASTQ();
-            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage);
+            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
         }else if(mode.equals("bam") || mode.equals("sam")){
             DeduplicateSAM dedup = new DeduplicateSAM();
-            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage);
+            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
         }
 
         System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds!");
