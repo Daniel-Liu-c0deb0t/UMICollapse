@@ -13,6 +13,7 @@ public class TestParallelDataStructures{
     public static void main(String[] args){
         ParallelDataStructure baseline = new ParallelNaive();
         ParallelDataStructure[] data = {
+            new ParallelBKTree(),
             new ParallelFenwickBKTree()
         };
 
