@@ -59,6 +59,7 @@ public class Main{
         d1.put("fenwickbktree", FenwickBKTree.class);
         data.put(false, d1);
         Map<String, Class<? extends Data>> d2 = new HashMap<>();
+        d2.put("naive", ParallelNaive.class);
         d2.put("bktree", ParallelBKTree.class);
         d2.put("fenwickbktree", ParallelFenwickBKTree.class);
         data.put(true, d2);
