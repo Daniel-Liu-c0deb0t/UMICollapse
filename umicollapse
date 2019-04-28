@@ -1,1 +1,1 @@
-java -Xms4G -Xmx4G -Xss10M -jar umicollapse.jar $@
+java -server -Xms4G -Xmx4G -Xss10M -jar umicollapse.jar $@
