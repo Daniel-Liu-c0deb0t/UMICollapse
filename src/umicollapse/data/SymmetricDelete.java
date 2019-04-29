@@ -49,6 +49,9 @@ public class SymmetricDelete implements DataStructure{
             return;
 
         if(idx == umiLength){
+            if(k > 0)
+                return;
+
             if(m.containsKey(curr)){
                 for(BitSet val : m.get(curr)){
                     if(umiFreq.containsKey(val)){
@@ -98,6 +101,9 @@ public class SymmetricDelete implements DataStructure{
             return;
 
         if(idx == umiLength){
+            if(k > 0)
+                return;
+
             BitSet key = curr.clone();
 
             if(!m.containsKey(key))
