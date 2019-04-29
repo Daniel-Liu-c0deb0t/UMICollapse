@@ -36,7 +36,9 @@ public class SymmetricDelete implements DataStructure{
 
         for(int i = 0; i <= maxEdits; i++){
             recursiveRemoveNear(umi, i, maxEdits - i, k, maxFreq, b, res);
-            charSet(b, i, Read.ANY);
+
+            if(i < umiLength)
+                charSet(b, i, Read.ANY);
         }
 
         return res;
@@ -74,7 +76,9 @@ public class SymmetricDelete implements DataStructure{
 
         for(int i = 0; i <= k; i++){
             recursiveRemoveNear(umi, idx + 1 + i, k - i, maxK, maxFreq, curr, res);
-            charSet(curr, idx + 1 + i, Read.ANY);
+
+            if(idx + 1 + i < umiLength)
+                charSet(curr, idx + 1 + i, Read.ANY);
         }
     }
 
@@ -83,7 +87,9 @@ public class SymmetricDelete implements DataStructure{
 
         for(int i = 0; i <= maxEdits; i++){
             recursiveInsert(umi, i, maxEdits - i, b);
-            charSet(b, i, Read.ANY);
+
+            if(i < umiLength)
+                charSet(b, i, Read.ANY);
         }
     }
 
@@ -106,7 +112,9 @@ public class SymmetricDelete implements DataStructure{
 
         for(int i = 0; i <= k; i++){
             recursiveInsert(umi, idx + 1 + i, k - i, curr);
-            charSet(curr, idx + 1 + i, Read.ANY);
+
+            if(idx + 1 + i < umiLength)
+                charSet(curr, idx + 1 + i, Read.ANY);
         }
     }
 
