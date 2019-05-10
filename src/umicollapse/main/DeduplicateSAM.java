@@ -29,7 +29,9 @@ public class DeduplicateSAM{
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator){
+        SAMRead.setDefaultUMIPattern(umiSeparator);
+
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
         Map<Integer, Map<BitSet, ReadFreq>> alignEnds = new HashMap<>();

@@ -21,7 +21,7 @@ public class CompareDedupUMI{
         Set<String> s = new HashSet<>();
 
         for(SAMRecord record : r1){
-            Matcher m = SAMRead.UMI_PATTERN.matcher(record.getReadName());
+            Matcher m = SAMRead.umiPattern("_").matcher(record.getReadName());
             m.find();
             String umi = m.group(2);
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
@@ -34,7 +34,7 @@ public class CompareDedupUMI{
         int wrong = 0;
 
         for(SAMRecord record : r2){
-            Matcher m = SAMRead.UMI_PATTERN.matcher(record.getReadName());
+            Matcher m = SAMRead.umiPattern("_").matcher(record.getReadName());
             m.find();
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
             String umi = m.group(2);

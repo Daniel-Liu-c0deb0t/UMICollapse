@@ -6,8 +6,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class SAMRead extends Read{
-    public static final Pattern UMI_PATTERN = Pattern.compile("^(.*)_([ATCGN]+)(.*?)$", Pattern.CASE_INSENSITIVE);
-
+    private static Pattern defaultUMIPattern;
     private SAMRecord record;
     private int avgQual;
 
@@ -22,9 +21,17 @@ public class SAMRead extends Read{
         this.avgQual = (int)avg;
     }
 
+    public static void setDefaultUMIPattern(String sep){
+        defaultUMIPattern = umiPattern(sep);
+    }
+
+    public static Pattern umiPattern(String sep){
+        return Pattern.compile("^(.*)" + sep + "([ATCGN]+)(.*?)$", Pattern.CASE_INSENSITIVE);
+    }
+
     @Override
     public BitSet getUMI(){
-        Matcher m = UMI_PATTERN.matcher(record.getReadName());
+        Matcher m = defaultUMIPattern.matcher(record.getReadName());
         m.find();
         String umi = m.group(2);
         return Utils.toBitSet(umi.toUpperCase());
@@ -32,7 +39,7 @@ public class SAMRead extends Read{
 
     @Override
     public int getUMILength(){
-        Matcher m = UMI_PATTERN.matcher(record.getReadName());
+        Matcher m = defaultUMIPattern.matcher(record.getReadName());
         m.find();
         return m.group(2).length();
     }

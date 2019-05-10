@@ -78,6 +78,7 @@ public class Main{
         int k = 1;
         int umiLength = -1;
         float percentage = 0.5f;
+        String umiSeparator = "_";
 
         boolean parallelData = false;
         boolean parallelAlign = false;
@@ -142,6 +143,11 @@ public class Main{
         if(m.containsKey(s))
             mergeStr = m.get(s).get(0);
 
+        s = "--umi-sep";
+
+        if(m.containsKey(s))
+            umiSeparator = m.get(s).get(0);
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;
@@ -160,7 +166,7 @@ public class Main{
             dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
         }else if(mode.equals("bam") || mode.equals("sam")){
             DeduplicateSAM dedup = new DeduplicateSAM();
-            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
+            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator);
         }
 
         System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds!");

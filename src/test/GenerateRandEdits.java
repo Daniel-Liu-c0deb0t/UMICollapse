@@ -25,7 +25,7 @@ public class GenerateRandEdits{
         SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, new File(args[1]));
 
         for(SAMRecord record : reader){
-            Matcher m = SAMRead.UMI_PATTERN.matcher(record.getReadName());
+            Matcher m = SAMRead.umiPattern("_").matcher(record.getReadName());
             m.find();
             String umi = m.group(2);
 
