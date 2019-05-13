@@ -13,14 +13,27 @@ import umicollapse.data.*;
 
 public class BenchmarkTime{
     public static void main(String[] args){
-        int numRand = 1000;
+        int numRand = Integer.parseInt(args[0]);
         int numDup = 20;
-        int numIter = 5;
-        int umiLength = 100;
-        int k = 1;
+        int numIter = 3;
+        int umiLength = Integer.parseInt(args[1]);
+        int k = Integer.parseInt(args[2]);
         float percentage = 0.5f;
-        Algorithm algo = new ConnectedComponents();
-        DataStructure data = new FenwickBKTree();
+        Algorithm algo = new Directional();
+
+        Map<String, Class<? extends DataStructure>> d1 = new HashMap<>();
+        d1.put("naive", Naive.class);
+        d1.put("combo", Combo.class);
+        d1.put("ngram", Ngram.class);
+        d1.put("delete", SymmetricDelete.class);
+        d1.put("trie", Trie.class);
+        d1.put("bktree", BKTree.class);
+        d1.put("sortbktree", SortBKTree.class);
+        d1.put("ngrambktree", NgramBKTree.class);
+        d1.put("sortngrambktree", SortNgramBKTree.class);
+        d1.put("fenwickbktree", FenwickBKTree.class);
+
+        DataStructure data = d1.get(args[3]).getDeclaredConstructor().newInstance();
         Random rand = new Random(1234); // fixed seed
 
         System.out.println("Algorithm\t" + algo.getClass().getName());
