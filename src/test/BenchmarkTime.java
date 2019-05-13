@@ -12,7 +12,7 @@ import umicollapse.algo.*;
 import umicollapse.data.*;
 
 public class BenchmarkTime{
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         int numRand = Integer.parseInt(args[0]);
         int numDup = 20;
         int numIter = 3;
