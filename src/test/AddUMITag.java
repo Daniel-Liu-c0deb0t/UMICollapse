@@ -23,6 +23,7 @@ public class AddUMITag{
             m.find();
             String umi = m.group(2);
 
+            record.setAttribute("FZ", new int[]{1, 2, 3}); // dummy tag
             record.setAttribute("RX", umi);
             record.setReadName(m.replaceFirst("$1"));
 
