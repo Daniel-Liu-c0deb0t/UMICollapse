@@ -18,8 +18,8 @@ import java.io.File;
 public class GenerateManyRandEdits{
     public static void main(String[] args) throws Exception{
         int k = 1;
-        int iter = 10000;
-        int dupIter = 100;
+        int iter = Integer.parseInt(args[2]);
+        int dupIter = 20;
         Random rand = new Random(1234);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(new File(args[0]));

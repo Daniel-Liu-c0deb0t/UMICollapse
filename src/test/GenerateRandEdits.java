@@ -18,7 +18,7 @@ import java.io.File;
 public class GenerateRandEdits{
     public static void main(String[] args) throws Exception{
         int k = 1;
-        int iter = 100;
+        int iter = Integer.parseInt(args[2]);
         Random rand = new Random(1234);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(new File(args[0]));
