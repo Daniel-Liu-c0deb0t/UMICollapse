@@ -7,7 +7,7 @@ First, clone this repository:
 git clone https://github.com/Daniel-Liu-c0deb0t/UMICollapse.git
 cd UMICollapse
 ```
-Then, install the dependencies, which are used for FASTQ/SAM/BAM input/output operations. Make sure you at least have Java 8.
+Then, install the dependencies, which are used for FASTQ/SAM/BAM input/output operations. Make sure you have Java 11.
 ```
 mkdir lib
 cd lib
