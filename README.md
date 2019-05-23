@@ -1,5 +1,5 @@
 # UMICollapse
-Accelerating the deduplication and collapsing process for reads with Unique Molecular Identifiers (UMI).
+Accelerating the deduplication and collapsing process for reads with Unique Molecular Identifiers (UMI). This tool implements many efficient algorithms for faster UMI deduplication.
 
 ## Installation
 First, clone this repository:
