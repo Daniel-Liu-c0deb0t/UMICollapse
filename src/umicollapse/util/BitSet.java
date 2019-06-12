@@ -64,6 +64,9 @@ public class BitSet{
 
         BitSet o = (BitSet)obj;
 
+        if(this == o)
+            return true;
+
         if(bits.length != o.bits.length)
             return false;
 

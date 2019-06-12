@@ -22,6 +22,7 @@ import umicollapse.merge.*;
 import umicollapse.util.Read;
 import umicollapse.util.SAMRead;
 import umicollapse.util.ReadFreq;
+import static umicollapse.util.Utils.HASH_CONST;
 
 public class DeduplicateSAM{
     private float avgUMICount;
@@ -33,8 +34,7 @@ public class DeduplicateSAM{
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-        Map<Integer, Map<BitSet, ReadFreq>> alignStarts = new HashMap<>();
-        Map<Integer, Map<BitSet, ReadFreq>> alignEnds = new HashMap<>();
+        Map<Alignment, Map<BitSet, ReadFreq>> align = new HashMap<>();
 
         umiLength = umiLengthParam;
         int readCount = 0;
@@ -43,13 +43,16 @@ public class DeduplicateSAM{
             if(record.getReadUnmappedFlag()) // discard unmapped reads
                 continue;
 
-            int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
-            Map<Integer, Map<BitSet, ReadFreq>> align = record.getReadNegativeStrandFlag() ? alignEnds : alignStarts;
+            Alignment alignment = new Alignment(
+                    record.getReadNegativeStrandFlag(),
+                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                    record.getReferenceName()
+            );
 
-            if(!align.containsKey(start))
-                align.put(start, new HashMap<BitSet, ReadFreq>());
+            if(!align.containsKey(alignment))
+                align.put(alignment, new HashMap<BitSet, ReadFreq>());
 
-            Map<BitSet, ReadFreq> umiRead = align.get(start);
+            Map<BitSet, ReadFreq> umiRead = align.get(alignment);
 
             Read read = new SAMRead(record);
             BitSet umi = read.getUMI();
@@ -80,41 +83,14 @@ public class DeduplicateSAM{
 
         System.out.println("Done reading input file into memory!");
 
-        int alignPosCount = alignStarts.size() + alignEnds.size();
+        int alignPosCount = align.size();
         avgUMICount = 0.0f;
         maxUMICount = 0;
         dedupedCount = 0;
         Object lock = new Object();
 
-        Stream<Map.Entry<Integer, Map<BitSet, ReadFreq>>> stream = parallel ?
-            alignStarts.entrySet().parallelStream() : alignStarts.entrySet().stream();
-
-        stream.forEach(e -> {
-            List<Read> deduped;
-            Data data = null;
-
-            try{
-                data = dataClass.getDeclaredConstructor().newInstance();
-            }catch(Exception ex){
-                ex.printStackTrace();
-            }
-
-            if(algo instanceof Algorithm)
-                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, umiLength, k, percentage);
-            else
-                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, umiLength, k, percentage);
-
-            synchronized(lock){
-                avgUMICount += (float)e.getValue().size() / alignPosCount;
-                maxUMICount = Math.max(maxUMICount, e.getValue().size());
-                dedupedCount += deduped.size();
-
-                for(Read read : deduped)
-                    writer.addAlignment(((SAMRead)read).toSAMRecord());
-            }
-        });
-
-        stream = parallel ? alignEnds.entrySet().parallelStream() : alignEnds.entrySet().stream();
+        Stream<Map.Entry<Alignment, Map<BitSet, ReadFreq>>> stream =
+            parallel ? align.entrySet().parallelStream() : align.entrySet().stream();
 
         stream.forEach(e -> {
             List<Read> deduped;
@@ -148,5 +124,47 @@ public class DeduplicateSAM{
         System.out.println("Average number of UMIs per alignment position\t" + avgUMICount);
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
         System.out.println("Number of reads after deduplicating\t" + dedupedCount);
+    }
+
+    private static class Alignment{
+        private boolean strand;
+        private int coord;
+        private String ref;
+
+        public Alignment(boolean strand, int coord, String ref){
+            this.strand = strand;
+            this.coord = coord;
+            this.ref = ref;
+        }
+
+        @Override
+        public boolean equals(Object o){
+            if(!(o instanceof Alignment))
+                return false;
+
+            Alignment a = (Alignment)o;
+
+            if(this == a)
+                return true;
+
+            if(strand != a.strand)
+                return false;
+
+            if(coord != a.coord)
+                return false;
+
+            if(!ref.equals(a.ref))
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode(){
+            int hash = strand ? 1231 : 1237;
+            hash = hash * HASH_CONST + coord;
+            hash = hash * HASH_CONST + ref.hashCode();
+            return hash;
+        }
     }
 }
