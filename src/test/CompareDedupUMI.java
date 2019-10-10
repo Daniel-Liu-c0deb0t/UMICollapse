@@ -25,7 +25,7 @@ public class CompareDedupUMI{
             m.find();
             String umi = m.group(2);
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
-            s.add(umi + "_" + record.getReadNegativeStrandFlag() + "_" + start);
+            s.add(umi + "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName());
         }
 
         r1.close();
@@ -38,7 +38,7 @@ public class CompareDedupUMI{
             m.find();
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
             String umi = m.group(2);
-            umi += "_" + record.getReadNegativeStrandFlag() + "_" + start;
+            umi += "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName();
 
             if(s.contains(umi)){
                 s.remove(umi);
