@@ -21,8 +21,8 @@ Then, install the dependencies, which are used for FASTQ/SAM/BAM input/output op
 ```
 mkdir lib
 cd lib
-curl -O http://central.maven.org/maven2/com/github/samtools/htsjdk/2.19.0/htsjdk-2.19.0.jar
-curl -O http://central.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.7.3/snappy-java-1.1.7.3.jar
+curl -O https://repo1.maven.org/maven2/com/github/samtools/htsjdk/2.19.0/htsjdk-2.19.0.jar
+curl -O https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.7.3/snappy-java-1.1.7.3.jar
 cd ..
 ```
 Now you have UMICollapse installed!
