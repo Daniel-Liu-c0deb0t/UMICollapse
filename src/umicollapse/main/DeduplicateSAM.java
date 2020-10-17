@@ -25,7 +25,7 @@ import umicollapse.util.ReadFreq;
 import static umicollapse.util.Utils.HASH_CONST;
 
 public class DeduplicateSAM{
-    private float avgUMICount;
+    private int avgUMICount;
     private int maxUMICount;
     private int dedupedCount;
     private int umiLength;
@@ -79,12 +79,14 @@ public class DeduplicateSAM{
             e.printStackTrace();
         }
 
+        reader = null;
+
         System.gc(); // attempt to clear up memory before deduplicating
 
         System.out.println("Done reading input file into memory!");
 
         int alignPosCount = align.size();
-        avgUMICount = 0.0f;
+        avgUMICount = 0;
         maxUMICount = 0;
         dedupedCount = 0;
         Object lock = new Object();
@@ -108,7 +110,7 @@ public class DeduplicateSAM{
                 deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, umiLength, k, percentage);
 
             synchronized(lock){
-                avgUMICount += (float)e.getValue().size() / alignPosCount;
+                avgUMICount += e.getValue().size();
                 maxUMICount = Math.max(maxUMICount, e.getValue().size());
                 dedupedCount += deduped.size();
 
@@ -121,12 +123,139 @@ public class DeduplicateSAM{
 
         System.out.println("Number of input reads\t" + readCount);
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
-        System.out.println("Average number of UMIs per alignment position\t" + avgUMICount);
+        System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
         System.out.println("Number of reads after deduplicating\t" + dedupedCount);
     }
 
-    private static class Alignment{
+    // trade off speed for lower memory usage
+    // input should be sorted based on alignment for best results
+    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator){
+        SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+        Map<Alignment, AlignReads> align = new HashMap<>();
+        int idx = 0;
+
+        // first pass to figure out where each alignment position ends
+        for(SAMRecord record : firstPass){
+            if(record.getReadUnmappedFlag()) // discard unmapped reads
+                continue;
+
+            Alignment alignment = new Alignment(
+                    record.getReadNegativeStrandFlag(),
+                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                    record.getReferenceName()
+            );
+
+            if(!align.containsKey(alignment))
+                align.put(alignment, new AlignReads());
+
+            align.get(alignment).latest = idx;
+            idx++;
+        }
+
+        try{
+            firstPass.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        firstPass = null;
+
+        System.gc(); // attempt to clear up memory before second pass
+
+        SAMRead.setDefaultUMIPattern(umiSeparator);
+
+        SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+        SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, out);
+
+        umiLength = umiLengthParam;
+        int readCount = 0;
+        int alignPosCount = align.size();
+        avgUMICount = 0;
+        maxUMICount = 0;
+        dedupedCount = 0;
+
+        for(SAMRecord record : reader){
+            if(record.getReadUnmappedFlag()) // discard unmapped reads
+                continue;
+
+            Alignment alignment = new Alignment(
+                    record.getReadNegativeStrandFlag(),
+                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                    record.getReferenceName()
+            );
+
+            AlignReads alignReads = align.get(alignment);
+
+            Read read = new SAMRead(record);
+            BitSet umi = read.getUMI();
+
+            if(umiLength == -1)
+                umiLength = read.getUMILength();
+
+            if(alignReads.umiRead.containsKey(umi)){
+                ReadFreq prev = alignReads.umiRead.get(umi);
+                prev.read = merge.merge(read, prev.read);
+                prev.freq++;
+            }else{
+                alignReads.umiRead.put(umi, new ReadFreq(read, 1));
+            }
+
+            if(readCount >= alignReads.latest){
+                List<Read> deduped;
+                Data data = null;
+
+                try{
+                    data = dataClass.getDeclaredConstructor().newInstance();
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+
+                if(algo instanceof Algorithm)
+                    deduped = ((Algorithm)algo).apply(alignReads.umiRead, (DataStructure)data, umiLength, k, percentage);
+                else
+                    deduped = ((ParallelAlgorithm)algo).apply(alignReads.umiRead, (ParallelDataStructure)data, umiLength, k, percentage);
+
+                avgUMICount += alignReads.umiRead.size();
+                maxUMICount = Math.max(maxUMICount, alignReads.umiRead.size());
+                dedupedCount += deduped.size();
+
+                for(Read r : deduped)
+                    writer.addAlignment(((SAMRead)r).toSAMRecord());
+
+                // done with the current alignment position, so free up memory
+                align.remove(alignment);
+            }
+
+            readCount++;
+        }
+
+        try{
+            reader.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        writer.close();
+
+        System.out.println("Number of input reads\t" + readCount);
+        System.out.println("Number of unique alignment positions\t" + alignPosCount);
+        System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
+        System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
+        System.out.println("Number of reads after deduplicating\t" + dedupedCount);
+    }
+
+    private static class AlignReads{
+        public int latest;
+        public Map<BitSet, ReadFreq> umiRead;
+
+        public AlignReads(){
+            this.latest = 0;
+            this.umiRead = new HashMap<BitSet, ReadFreq>();
+        }
+    }
+
+    private static class Alignment implements Comparable{
         private boolean strand;
         private int coord;
         private String ref;
@@ -165,6 +294,19 @@ public class DeduplicateSAM{
             hash = hash * HASH_CONST + coord;
             hash = hash * HASH_CONST + ref.hashCode();
             return hash;
+        }
+
+        @Override
+        public int compareTo(Object o){
+            Alignment other = (Alignment)o;
+
+            if(strand != other.strand)
+                return Boolean.compare(strand, other.strand);
+
+            if(coord != other.coord)
+                return coord - other.coord;
+
+            return ref.compareTo(other.ref);
         }
     }
 }

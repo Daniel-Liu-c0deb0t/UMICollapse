@@ -16,9 +16,9 @@ public class SAMRead extends Read{
         float avg = 0.0f;
 
         for(byte b : record.getBaseQualities())
-            avg += (float)b / record.getReadLength();
+            avg += b;
 
-        this.avgQual = (int)avg;
+        this.avgQual = (int)(avg / record.getReadLength());
     }
 
     public static void setDefaultUMIPattern(String sep){

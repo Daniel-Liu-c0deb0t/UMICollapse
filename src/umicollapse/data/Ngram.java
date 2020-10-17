@@ -81,16 +81,16 @@ public class Ngram implements DataStructure{
         for(Map.Entry<Interval, Set<BitSet>> e : m.entrySet()){
             int size = e.getValue().size();
             maxNgrams = Math.max(maxNgrams, size);
-            avgNgrams += (float)size / m.size();
+            avgNgrams += size;
         }
 
         res.put("max n-gram bin size", (float)maxNgrams);
-        res.put("avg n-gram bin size", avgNgrams);
+        res.put("avg n-gram bin size", avgNgrams / m.size());
 
         return res;
     }
 
-    private static class Interval{
+    private static class Interval implements Comparable{
         private BitSet s;
         private int lo, hi, hash;
 
@@ -131,6 +131,27 @@ public class Ngram implements DataStructure{
             }
 
             return true;
+        }
+
+        @Override
+        public int compareTo(Object o){
+            Interval other = (Interval)o;
+
+            if(lo != other.lo)
+                return lo - other.lo;
+
+            if(hi != other.hi)
+                return hi - other.hi;
+
+            for(int i = 0; i < hi - lo + 1; i++){
+                int a = get(i);
+                int b = other.get(i);
+
+                if(a != b)
+                    return a - b;
+            }
+
+            return 0;
         }
     }
 }

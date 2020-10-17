@@ -74,7 +74,7 @@ public class Main{
         File out = null;
         String algoStr = "dir";
         String dataStr = "ngrambktree";
-        String mergeStr = "mapqual";
+        String mergeStr = mode.equals("fastq") ? "avgqual" : "mapqual";
         int k = 1;
         int umiLength = -1;
         float percentage = 0.5f;
@@ -82,6 +82,8 @@ public class Main{
 
         boolean parallelData = false;
         boolean parallelAlign = false;
+
+        boolean twoPass = false;
 
         String s = "-k";
 
@@ -148,6 +150,11 @@ public class Main{
         if(m.containsKey(s))
             umiSeparator = m.get(s).get(0);
 
+        s = "--two-pass";
+
+        if(m.containsKey(s))
+            twoPass = true;
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;
@@ -166,7 +173,12 @@ public class Main{
             dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
         }else if(mode.equals("bam") || mode.equals("sam")){
             DeduplicateSAM dedup = new DeduplicateSAM();
-            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator);
+
+            if(twoPass){
+                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator);
+            }else{
+                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator);
+            }
         }
 
         System.out.println("UMI collapsing finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds!");

@@ -140,11 +140,11 @@ public class SymmetricDelete implements DataStructure{
         for(Map.Entry<BitSet, Set<BitSet>> e : m.entrySet()){
             int size = e.getValue().size();
             maxSubseq = Math.max(maxSubseq, size);
-            avgSubseq += (float)size / m.size();
+            avgSubseq += size;
         }
 
         res.put("max subseq bin size", (float)maxSubseq);
-        res.put("avg subseq bin size", (float)avgSubseq);
+        res.put("avg subseq bin size", avgSubseq / m.size());
 
         return res;
     }

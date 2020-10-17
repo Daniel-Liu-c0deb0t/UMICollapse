@@ -2,7 +2,7 @@ package umicollapse.util;
 
 import java.util.Arrays;
 
-public class BitSet{
+public class BitSet implements Comparable{
     private static final int CHUNK_SIZE = 64;
 
     private long[] bits;
@@ -76,6 +76,21 @@ public class BitSet{
         }
 
         return true;
+    }
+
+    @Override
+    public int compareTo(Object o){
+        BitSet other = (BitSet)o;
+
+        if(bits.length != other.bits.length)
+            return bits.length - other.bits.length;
+
+        for(int i = 0; i < bits.length; i++){
+            if(bits[i] != other.bits[i])
+                return Long.compare(bits[i], other.bits[i]);
+        }
+
+        return 0;
     }
 
     public BitSet clone(){

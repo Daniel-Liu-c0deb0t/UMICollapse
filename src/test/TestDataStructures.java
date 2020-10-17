@@ -49,7 +49,9 @@ public class TestDataStructures{
             for(DataStructure d : data){
                 Set<BitSet> set = d.removeNear(umi, k, Integer.MAX_VALUE);
 
-                if(!TestUtils.setMatches(set, baselineSet)){
+                if(TestUtils.setMatches(set, baselineSet)){
+                    System.out.println("Passed: data structure\t" + d.getClass().getName());
+                }else{
                     System.out.println("\nError");
 
                     for(String s : umiList)

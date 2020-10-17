@@ -21,8 +21,8 @@ Then, install the dependencies, which are used for FASTQ/SAM/BAM input/output op
 ```
 mkdir lib
 cd lib
-curl -O https://repo1.maven.org/maven2/com/github/samtools/htsjdk/2.19.0/htsjdk-2.19.0.jar
-curl -O https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.7.3/snappy-java-1.1.7.3.jar
+curl -O -L https://repo1.maven.org/maven2/com/github/samtools/htsjdk/2.19.0/htsjdk-2.19.0.jar
+curl -O -L https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.7.3/snappy-java-1.1.7.3.jar
 cd ..
 ```
 Now you have UMICollapse installed!
@@ -32,7 +32,7 @@ First, get some sample data from the UMI-tools repository. These aligned reads h
 ```
 mkdir test
 cd test
-curl -O https://github.com/CGATOxford/UMI-tools/releases/download/1.0.0/example.bam
+curl -O -L https://github.com/CGATOxford/UMI-tools/releases/download/1.0.0/example.bam
 samtools index example.bam
 cd ..
 ```
@@ -41,6 +41,27 @@ Finally, `test/example.bam` can be deduplicated.
 ./umicollapse bam -i test/example.bam -o test/dedup_example.bam
 ```
 The UMI length will be autodetected, and the output `test/dedup_example.bam` should only contain reads that have a unique UMI.
+
+## Building
+Run
+```
+./build.sh
+```
+to build the executable `.jar` file.
+
+## Testing
+Running basic tests after the `.jar` file is built:
+```
+./test.sh
+```
+There are also some small scripts for testing and debugging. For example, comparing two files to check if the UMIs are the same can be done with:
+```
+./run.sh test.CompareDedupUMI test/dedup_example_1.bam test/dedup_example_2.bam
+```
+or running benchmarks:
+```
+./run.sh test.BenchmarkTime 10000 10 1 ngrambktree
+```
 
 ## Command-Line Arguments
 ### Mode (appears before commands)
@@ -57,8 +78,9 @@ The UMI length will be autodetected, and the output `test/dedup_example.bam` sho
 * `-T`: parallelize the deduplication of one single alignment position. The data structure can only be `naive`, `bktree`, and `fenwickbktree`. Default: false.
 * `--umi-sep`: separator string between the UMI and the rest of the read header. Default: `_`.
 * `--algo`: deduplication algorithm. Either `cc` for connected components, `adj` for adjacency, or `dir` for directional. Default: `dir`.
-* `--merge`: method for identifying which UMI to keep out of every two UMIs. Either `any`, `avgqual`, or `mapqual`. Default: `mapqual`.
+* `--merge`: method for identifying which UMI to keep out of every two UMIs. Either `any`, `avgqual`, or `mapqual`. Default: `mapqual` for SAM/BAM mode, `avgqual` for FASTQ mode.
 * `--data`: data structure used in deduplication. Either `naive`, `combo`, `ngram`, `delete`, `trie`, `bktree`, `sortbktree`, `ngrambktree`, `sortngrambktree`, or `fenwickbktree`. Default: `ngrambktree`.
+* `--two-pass`: use a separate two-pass algorithm for SAM/BAM deduplication. This may be slightly slower, but it should use much less memory if the reads are approximately sorted by alignment coordinate. Default: false.
 
 ## Java Virtual Machine Memory
-If you need more memory to process larger datasets, then modify the `umicollapse` file. `-Xms` represents the initial heap size, `-Xmx` represents the max heap size, and `-Xss` represents the stack size.
+If you need more memory to process larger datasets, then modify the `umicollapse` file. `-Xms` represents the initial heap size, `-Xmx` represents the max heap size, and `-Xss` represents the stack size. If memory usage is still is an issue, use the `--two-pass` option to save memory when the reads are approximately sorted (this is not a strict requirement, its just that when reads with the same alignment coordinate are close together in the file, they do not have to be kept in memory for very long).

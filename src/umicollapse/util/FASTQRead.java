@@ -20,9 +20,9 @@ public class FASTQRead extends Read{
         float avg = 0.0f;
 
         for(byte b : this.qual)
-            avg += (float)b / this.qual.length;
+            avg += b;
 
-        this.avgQual = (int)avg;
+        this.avgQual = (int)(avg / this.qual.length);
     }
 
     public FASTQRead(String desc, String umiAndSeq, String qual){
@@ -33,9 +33,9 @@ public class FASTQRead extends Read{
         float avg = 0.0f;
 
         for(byte b : this.qual)
-            avg += (float)b / this.qual.length;
+            avg += b;
 
-        this.avgQual = (int)avg;
+        this.avgQual = (int)(avg / this.qual.length);
     }
 
     @Override
