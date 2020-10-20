@@ -34,7 +34,7 @@ public class DeduplicateSAM{
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-        Map<Alignment, Map<BitSet, ReadFreq>> align = new HashMap<>();
+        Map<Alignment, Map<BitSet, ReadFreq>> align = new HashMap<>(1 << 16);
 
         umiLength = umiLengthParam;
         int readCount = 0;
@@ -50,7 +50,7 @@ public class DeduplicateSAM{
             );
 
             if(!align.containsKey(alignment))
-                align.put(alignment, new HashMap<BitSet, ReadFreq>());
+                align.put(alignment, new HashMap<BitSet, ReadFreq>(4));
 
             Map<BitSet, ReadFreq> umiRead = align.get(alignment);
 
@@ -132,7 +132,7 @@ public class DeduplicateSAM{
     // input should be sorted based on alignment for best results
     public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-        Map<Alignment, AlignReads> align = new HashMap<>();
+        Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
         int idx = 0;
 
         // first pass to figure out where each alignment position ends
@@ -163,6 +163,8 @@ public class DeduplicateSAM{
 
         System.gc(); // attempt to clear up memory before second pass
 
+        System.out.println("Done with the first pass!");
+
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
@@ -186,6 +188,9 @@ public class DeduplicateSAM{
             );
 
             AlignReads alignReads = align.get(alignment);
+
+            if(alignReads.umiRead == null)
+                alignReads.umiRead = new HashMap<BitSet, ReadFreq>(4);
 
             Read read = new SAMRead(record);
             BitSet umi = read.getUMI();
@@ -251,7 +256,7 @@ public class DeduplicateSAM{
 
         public AlignReads(){
             this.latest = 0;
-            this.umiRead = new HashMap<BitSet, ReadFreq>();
+            this.umiRead = null;
         }
     }
 

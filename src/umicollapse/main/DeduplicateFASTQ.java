@@ -33,7 +33,7 @@ public class DeduplicateFASTQ{
             umiLength = 0;
 
         FastqReader reader = new FastqReader(in);
-        Map<Integer, Map<BitSet, ReadFreq>> readLength = new HashMap<>();
+        Map<Integer, Map<BitSet, ReadFreq>> readLength = new HashMap<>(1 << 16);
 
         int readCount = 0;
 
@@ -41,7 +41,7 @@ public class DeduplicateFASTQ{
             int length = record.getReadLength();
 
             if(!readLength.containsKey(length))
-                readLength.put(length, new HashMap<BitSet, ReadFreq>());
+                readLength.put(length, new HashMap<BitSet, ReadFreq>(4));
 
             Map<BitSet, ReadFreq> umiRead = readLength.get(length);
 
