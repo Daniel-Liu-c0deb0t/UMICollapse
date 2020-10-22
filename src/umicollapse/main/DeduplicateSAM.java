@@ -268,7 +268,7 @@ public class DeduplicateSAM{
         public Alignment(boolean strand, int coord, String ref){
             this.strand = strand;
             this.coord = coord;
-            this.ref = ref;
+            this.ref = ref.intern();
         }
 
         @Override
@@ -287,7 +287,7 @@ public class DeduplicateSAM{
             if(coord != a.coord)
                 return false;
 
-            if(!ref.equals(a.ref))
+            if(ref != a.ref) // can directly compare interned strings
                 return false;
 
             return true;
