@@ -16,16 +16,17 @@ import java.io.File;
 
 public class CompareDedupUMI{
     public static void main(String[] args) throws Exception{
+        String sep = args[2];
         SamReader r1 = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(new File(args[0]));
 
         Set<String> s = new HashSet<>();
 
         for(SAMRecord record : r1){
-            Matcher m = SAMRead.umiPattern("_").matcher(record.getReadName());
+            Matcher m = SAMRead.umiPattern(sep).matcher(record.getReadName());
             m.find();
             String umi = m.group(2);
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
-            s.add(umi + "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName());
+            s.add(umi + sep + record.getReadNegativeStrandFlag() + sep + start + sep + record.getReferenceName());
         }
 
         r1.close();
@@ -34,11 +35,11 @@ public class CompareDedupUMI{
         int wrong = 0;
 
         for(SAMRecord record : r2){
-            Matcher m = SAMRead.umiPattern("_").matcher(record.getReadName());
+            Matcher m = SAMRead.umiPattern(sep).matcher(record.getReadName());
             m.find();
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
             String umi = m.group(2);
-            umi += "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName();
+            umi += sep + record.getReadNegativeStrandFlag() + sep + start + sep + record.getReferenceName();
 
             if(s.contains(umi)){
                 s.remove(umi);

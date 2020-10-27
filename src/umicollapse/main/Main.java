@@ -85,6 +85,8 @@ public class Main{
 
         boolean twoPass = false;
 
+        boolean paired = false;
+
         String s = "-k";
 
         if(m.containsKey(s))
@@ -155,6 +157,11 @@ public class Main{
         if(m.containsKey(s))
             twoPass = true;
 
+        s = "--paired";
+
+        if(m.containsKey(s))
+            paired = true;
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;
@@ -175,9 +182,9 @@ public class Main{
             DeduplicateSAM dedup = new DeduplicateSAM();
 
             if(twoPass){
-                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator);
+                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired);
             }else{
-                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator);
+                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired);
             }
         }
 

@@ -4,11 +4,13 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.SAMRecordIterator;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import java.util.stream.Stream;
@@ -30,7 +32,7 @@ public class DeduplicateSAM{
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired){
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
@@ -43,11 +45,29 @@ public class DeduplicateSAM{
             if(record.getReadUnmappedFlag()) // discard unmapped reads
                 continue;
 
-            Alignment alignment = new Alignment(
-                    record.getReadNegativeStrandFlag(),
-                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
-                    record.getReferenceName()
-            );
+            if(paired && (!record.getReadPairedFlag() // discard unpaired
+                        || record.getSecondOfPairFlag() // ignore reversed reads
+                        || record.getMateUnmappedFlag() // discard unmapped reads
+                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+                continue;
+            }
+
+            Alignment alignment = null;
+
+            if(paired){
+                alignment = new PairedAlignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName(),
+                        record.getInferredInsertSize()
+                );
+            }else{
+                alignment = new Alignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName()
+                );
+            }
 
             if(!align.containsKey(alignment))
                 align.put(alignment, new HashMap<BitSet, ReadFreq>(4));
@@ -71,7 +91,7 @@ public class DeduplicateSAM{
             readCount++;
         }
 
-        SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, out);
+        Writer writer = new Writer(in, out, reader, paired);
 
         try{
             reader.close();
@@ -115,11 +135,11 @@ public class DeduplicateSAM{
                 dedupedCount += deduped.size();
 
                 for(Read read : deduped)
-                    writer.addAlignment(((SAMRead)read).toSAMRecord());
+                    writer.write(((SAMRead)read).toSAMRecord());
             }
         });
 
-        writer.close();
+        int unpaired = writer.close();
 
         System.out.println("Number of input reads\t" + readCount);
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
@@ -130,7 +150,7 @@ public class DeduplicateSAM{
 
     // trade off speed for lower memory usage
     // input should be sorted based on alignment for best results
-    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator){
+    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
         int idx = 0;
@@ -140,11 +160,29 @@ public class DeduplicateSAM{
             if(record.getReadUnmappedFlag()) // discard unmapped reads
                 continue;
 
-            Alignment alignment = new Alignment(
-                    record.getReadNegativeStrandFlag(),
-                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
-                    record.getReferenceName()
-            );
+            if(paired && (!record.getReadPairedFlag() // discard unpaired
+                        || record.getSecondOfPairFlag() // ignore reversed reads
+                        || record.getMateUnmappedFlag() // discard unmapped reads
+                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+                continue;
+            }
+
+            Alignment alignment = null;
+
+            if(paired){
+                alignment = new PairedAlignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName(),
+                        record.getInferredInsertSize()
+                );
+            }else{
+                alignment = new Alignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName()
+                );
+            }
 
             if(!align.containsKey(alignment))
                 align.put(alignment, new AlignReads());
@@ -168,7 +206,7 @@ public class DeduplicateSAM{
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-        SAMFileWriter writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(reader.getFileHeader(), false, out);
+        Writer writer = new Writer(in, out, reader, paired);
 
         umiLength = umiLengthParam;
         int readCount = 0;
@@ -181,11 +219,29 @@ public class DeduplicateSAM{
             if(record.getReadUnmappedFlag()) // discard unmapped reads
                 continue;
 
-            Alignment alignment = new Alignment(
-                    record.getReadNegativeStrandFlag(),
-                    record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
-                    record.getReferenceName()
-            );
+            if(paired && (!record.getReadPairedFlag() // discard unpaired
+                        || record.getSecondOfPairFlag() // ignore reversed reads
+                        || record.getMateUnmappedFlag() // discard unmapped reads
+                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+                continue;
+            }
+
+            Alignment alignment = null;
+
+            if(paired){
+                alignment = new PairedAlignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName(),
+                        record.getInferredInsertSize()
+                );
+            }else{
+                alignment = new Alignment(
+                        record.getReadNegativeStrandFlag(),
+                        record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                        record.getReferenceName()
+                );
+            }
 
             AlignReads alignReads = align.get(alignment);
 
@@ -226,7 +282,7 @@ public class DeduplicateSAM{
                 dedupedCount += deduped.size();
 
                 for(Read r : deduped)
-                    writer.addAlignment(((SAMRead)r).toSAMRecord());
+                    writer.write(((SAMRead)r).toSAMRecord());
 
                 // done with the current alignment position, so free up memory
                 align.remove(alignment);
@@ -241,13 +297,149 @@ public class DeduplicateSAM{
             e.printStackTrace();
         }
 
-        writer.close();
+        int unpaired = writer.close();
 
         System.out.println("Number of input reads\t" + readCount);
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
         System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
         System.out.println("Number of reads after deduplicating\t" + dedupedCount);
+    }
+
+    private static class ReversedRead implements Comparable{
+        private String name, ref;
+        private int coord;
+
+        public ReversedRead(String name, String ref, int coord){
+            this.name = name;
+            this.ref = ref.intern();
+            this.coord = coord;
+        }
+
+        @Override
+        public boolean equals(Object o){
+            if(!(o instanceof ReversedRead))
+                return false;
+
+            ReversedRead a = (ReversedRead)o;
+
+            if(this == a)
+                return true;
+
+            if(ref != a.ref)
+                return false;
+
+            if(!name.equals(a.name))
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode(){
+            int hash = name.hashCode();
+            hash = hash * HASH_CONST + ref.hashCode();
+            hash = hash * HASH_CONST + coord;
+            return hash;
+        }
+
+        @Override
+        public int compareTo(Object o){
+            ReversedRead other = (ReversedRead)o;
+
+            if(coord != other.coord)
+                return coord - other.coord;
+
+            if(ref != other.ref)
+                return ref.compareTo(other.ref);
+
+            return name.compareTo(other.name);
+        }
+    }
+
+    private static class Writer{
+        private boolean paired;
+        private SAMFileWriter writer;
+        private File in;
+        private String ref = null;
+        private HashSet<ReversedRead> set;
+        private int unpaired = 0;
+
+        public Writer(File in, File out, SamReader r, boolean paired){
+            if(paired){
+                this.in = in;
+                this.set = new HashSet<ReversedRead>();
+            }
+
+            this.writer = new SAMFileWriterFactory().makeSAMOrBAMWriter(r.getFileHeader(), false, out);
+            this.paired = paired;
+        }
+
+        public void write(SAMRecord record){
+            if(paired){ // must be forwards read
+                String currRef = record.getReferenceName();
+
+                if(ref == null)
+                    ref = currRef;
+
+                if(!ref.equals(currRef)){
+                    writeReversed();
+                    ref = currRef;
+                }
+
+                set.add(new ReversedRead(
+                        record.getReadName(),
+                        record.getMateReferenceName(),
+                        record.getMateAlignmentStart()
+                ));
+            }
+
+            writer.addAlignment(record);
+        }
+
+        public int close(){
+            if(paired)
+                writeReversed();
+
+            writer.close();
+
+            return unpaired;
+        }
+
+        private void writeReversed(){
+            if(ref == null)
+                return;
+
+            int paired = 0;
+            SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+            SAMRecordIterator iter = reader.query(ref, 0, 0, true);
+
+            while(iter.hasNext()){
+                SAMRecord record = iter.next();
+
+                if(record.getReadPairedFlag() && record.getSecondOfPairFlag()){
+                    ReversedRead read = new ReversedRead(
+                            record.getReadName(),
+                            record.getReferenceName(),
+                            record.getAlignmentStart()
+                    );
+
+                    if(set.contains(read)){
+                        writer.addAlignment(record);
+                        paired++;
+                    }
+                }
+            }
+
+            unpaired += set.size() - paired;
+            set.clear(); // forwards and reversed reads must map to the same reference
+
+            try{
+                reader.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     private static class AlignReads{
@@ -257,6 +449,48 @@ public class DeduplicateSAM{
         public AlignReads(){
             this.latest = 0;
             this.umiRead = null;
+        }
+    }
+
+    private static class PairedAlignment extends Alignment{
+        private int tlen;
+
+        public PairedAlignment(boolean strand, int coord, String ref, int tlen){
+            super(strand, coord, ref);
+            this.tlen = tlen;
+        }
+
+        @Override
+        public boolean equals(Object o){
+            if(!(o instanceof Alignment))
+                return false;
+
+            PairedAlignment a = (PairedAlignment)o;
+
+            if(this == a)
+                return true;
+
+            if(tlen != a.tlen)
+                return false;
+
+            return super.equals(a);
+        }
+
+        @Override
+        public int hashCode(){
+            int hash = super.hashCode();
+            hash = hash * HASH_CONST + tlen;
+            return hash;
+        }
+
+        @Override
+        public int compareTo(Object o){
+            PairedAlignment other = (PairedAlignment)o;
+
+            if(tlen != other.tlen)
+                return Integer.compare(tlen, other.tlen);
+
+            return super.compareTo(other);
         }
     }
 

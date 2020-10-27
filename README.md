@@ -40,7 +40,19 @@ Finally, `test/example.bam` can be deduplicated.
 ```
 ./umicollapse bam -i test/example.bam -o test/dedup_example.bam
 ```
-The UMI length will be autodetected, and the output `test/dedup_example.bam` should only contain reads that have a unique UMI.
+The UMI length will be autodetected, and the output `test/dedup_example.bam` should only contain reads that have a unique UMI. Unmapped reads are removed.
+
+Here is an example with paired-end reads:
+```
+cd test
+curl -O -L https://cibiv.github.io/trumicount/sg_100g.bam
+samtools index sg_100g.bam
+cd ..
+```
+Then, run
+```
+./umicollapse bam -i test/sg_100g.bam -o test/dedup_sg_100g.bam --umi-sep : --paired --two-pass
+```
 
 ## Building
 Run
@@ -81,6 +93,7 @@ or running benchmarks:
 * `--merge`: method for identifying which UMI to keep out of every two UMIs. Either `any`, `avgqual`, or `mapqual`. Default: `mapqual` for SAM/BAM mode, `avgqual` for FASTQ mode.
 * `--data`: data structure used in deduplication. Either `naive`, `combo`, `ngram`, `delete`, `trie`, `bktree`, `sortbktree`, `ngrambktree`, `sortngrambktree`, or `fenwickbktree`. Default: `ngrambktree`.
 * `--two-pass`: use a separate two-pass algorithm for SAM/BAM deduplication. This may be slightly slower, but it should use much less memory if the reads are approximately sorted by alignment coordinate. Default: false.
+* `--paired`: use paired-end mode, which deduplicates pairs of reads. Currently removes chimeric alignments and unpaired reads. Default: false (single-end).
 
 ## Java Virtual Machine Memory
 If you need more memory to process larger datasets, then modify the `umicollapse` file. `-Xms` represents the initial heap size, `-Xmx` represents the max heap size, and `-Xss` represents the stack size. If you do not know how much memory is needed, it may be a good idea to set a small initial heap size, and a very large max heap size, so the heap can grow when necessary. If memory usage is still is an issue, use the `--two-pass` option to save memory when the reads are approximately sorted (this is not a strict requirement, its just that when reads with the same alignment coordinate are close together in the file, they do not have to be kept in memory for very long).
