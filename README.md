@@ -42,16 +42,13 @@ Finally, `test/example.bam` can be deduplicated.
 ```
 The UMI length will be autodetected, and the output `test/dedup_example.bam` should only contain reads that have a unique UMI. Unmapped reads are removed.
 
-Here is an example with paired-end reads:
+Here is a hypothetical example with paired-end reads:
 ```
-cd test
-curl -O -L https://cibiv.github.io/trumicount/sg_100g.bam
-samtools index sg_100g.bam
-cd ..
+./umicollapse bam -i paired_example.bam -o dedup_paired_example.bam --umi-sep : --paired --two-pass
 ```
-Then, run
+This should be equivalent to the following with [UMI-tools](https://github.com/CGATOxford/UMI-tools):
 ```
-./umicollapse bam -i test/sg_100g.bam -o test/dedup_sg_100g.bam --umi-sep : --paired --two-pass
+umi_tools dedup -I paired_example.bam -S dedup_paired_example.bam --umi-separator=: --paired --chimeric-pairs=discard --unpaired-reads=discard
 ```
 
 ## Building

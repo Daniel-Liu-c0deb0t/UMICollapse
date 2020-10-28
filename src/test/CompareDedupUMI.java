@@ -26,7 +26,16 @@ public class CompareDedupUMI{
             m.find();
             String umi = m.group(2);
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
-            s.add(umi + sep + record.getReadNegativeStrandFlag() + sep + start + sep + record.getReferenceName());
+            umi += "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName();
+
+            if(record.getReadPairedFlag()){
+                umi += "_" + record.getInferredInsertSize();
+
+                if(record.getSecondOfPairFlag()) // paired reads may have duplicates
+                    continue;
+            }
+
+            s.add(umi);
         }
 
         r1.close();
@@ -39,7 +48,14 @@ public class CompareDedupUMI{
             m.find();
             int start = record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart();
             String umi = m.group(2);
-            umi += sep + record.getReadNegativeStrandFlag() + sep + start + sep + record.getReferenceName();
+            umi += "_" + record.getReadNegativeStrandFlag() + "_" + start + "_" + record.getReferenceName();
+
+            if(record.getReadPairedFlag()){
+                umi += "_" + record.getInferredInsertSize();
+
+                if(record.getSecondOfPairFlag()) // paired reads may have duplicates
+                    continue;
+            }
 
             if(s.contains(umi)){
                 s.remove(umi);
