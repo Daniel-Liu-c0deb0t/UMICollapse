@@ -39,17 +39,39 @@ public class DeduplicateSAM{
         Map<Alignment, Map<BitSet, ReadFreq>> align = new HashMap<>(1 << 16);
 
         umiLength = umiLengthParam;
+        int totalReadCount = 0;
+        int unmapped = 0;
+        int unpaired = 0;
+        int chimeric = 0;
         int readCount = 0;
 
         for(SAMRecord record : reader){
-            if(record.getReadUnmappedFlag()) // discard unmapped reads
+            // always skip the reversed read
+            if(paired && record.getReadPairedFlag() && record.getSecondOfPairFlag())
                 continue;
 
-            if(paired && (!record.getReadPairedFlag() // discard unpaired
-                        || record.getSecondOfPairFlag() // ignore reversed reads
-                        || record.getMateUnmappedFlag() // discard unmapped reads
-                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+            totalReadCount++;
+
+            if(record.getReadUnmappedFlag()){ // discard unmapped reads
+                unmapped++;
                 continue;
+            }
+
+            if(paired){
+                if(!record.getReadPairedFlag()){
+                    unpaired++;
+                    continue;
+                }
+
+                if(record.getMateUnmappedFlag()){
+                    unmapped++;
+                    continue;
+                }
+
+                if(!record.getReferenceName().equals(record.getMateReferenceName())){
+                    chimeric++;
+                    continue;
+                }
             }
 
             Alignment alignment = null;
@@ -139,9 +161,17 @@ public class DeduplicateSAM{
             }
         });
 
-        int unpaired = writer.close();
+        writer.close();
 
-        System.out.println("Number of input reads\t" + readCount);
+        System.out.println("Number of input reads\t" + totalReadCount);
+        System.out.println("Number of removed unmapped reads\t" + unmapped);
+
+        if(paired){
+            System.out.println("Number of removed unpaired reads\t" + unpaired);
+            System.out.println("Number of removed chimeric reads\t" + chimeric);
+        }
+
+        System.out.println("Number of unremoved reads\t" + readCount);
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
         System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
@@ -153,18 +183,40 @@ public class DeduplicateSAM{
     public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
-        int idx = 0;
+        int totalReadCount = 0;
+        int unmapped = 0;
+        int unpaired = 0;
+        int chimeric = 0;
+        int readCount = 0;
 
         // first pass to figure out where each alignment position ends
         for(SAMRecord record : firstPass){
-            if(record.getReadUnmappedFlag()) // discard unmapped reads
+            // always skip the reversed read
+            if(paired && record.getReadPairedFlag() && record.getSecondOfPairFlag())
                 continue;
 
-            if(paired && (!record.getReadPairedFlag() // discard unpaired
-                        || record.getSecondOfPairFlag() // ignore reversed reads
-                        || record.getMateUnmappedFlag() // discard unmapped reads
-                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+            totalReadCount++;
+
+            if(record.getReadUnmappedFlag()){ // discard unmapped reads
+                unmapped++;
                 continue;
+            }
+
+            if(paired){
+                if(!record.getReadPairedFlag()){
+                    unpaired++;
+                    continue;
+                }
+
+                if(record.getMateUnmappedFlag()){
+                    unmapped++;
+                    continue;
+                }
+
+                if(!record.getReferenceName().equals(record.getMateReferenceName())){
+                    chimeric++;
+                    continue;
+                }
             }
 
             Alignment alignment = null;
@@ -187,8 +239,8 @@ public class DeduplicateSAM{
             if(!align.containsKey(alignment))
                 align.put(alignment, new AlignReads());
 
-            align.get(alignment).latest = idx;
-            idx++;
+            align.get(alignment).latest = readCount;
+            readCount++;
         }
 
         try{
@@ -209,7 +261,7 @@ public class DeduplicateSAM{
         Writer writer = new Writer(in, out, reader, paired);
 
         umiLength = umiLengthParam;
-        int readCount = 0;
+        int idx = 0;
         int alignPosCount = align.size();
         avgUMICount = 0;
         maxUMICount = 0;
@@ -262,7 +314,7 @@ public class DeduplicateSAM{
                 alignReads.umiRead.put(umi, new ReadFreq(read, 1));
             }
 
-            if(readCount >= alignReads.latest){
+            if(idx >= alignReads.latest){
                 List<Read> deduped;
                 Data data = null;
 
@@ -288,7 +340,7 @@ public class DeduplicateSAM{
                 align.remove(alignment);
             }
 
-            readCount++;
+            idx++;
         }
 
         try{
@@ -297,9 +349,17 @@ public class DeduplicateSAM{
             e.printStackTrace();
         }
 
-        int unpaired = writer.close();
+        writer.close();
 
-        System.out.println("Number of input reads\t" + readCount);
+        System.out.println("Number of input reads\t" + totalReadCount);
+        System.out.println("Number of removed unmapped reads\t" + unmapped);
+
+        if(paired){
+            System.out.println("Number of removed unpaired reads\t" + unpaired);
+            System.out.println("Number of removed chimeric reads\t" + chimeric);
+        }
+
+        System.out.println("Number of unremoved reads\t" + readCount);
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
         System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
@@ -363,7 +423,6 @@ public class DeduplicateSAM{
         private File in;
         private String ref = null;
         private HashSet<ReversedRead> set;
-        private int unpaired = 0;
 
         public Writer(File in, File out, SamReader r, boolean paired){
             if(paired){
@@ -397,41 +456,39 @@ public class DeduplicateSAM{
             writer.addAlignment(record);
         }
 
-        public int close(){
+        public void close(){
             if(paired)
                 writeReversed();
 
             writer.close();
-
-            return unpaired;
         }
 
         private void writeReversed(){
             if(ref == null)
                 return;
 
-            int paired = 0;
             SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
             SAMRecordIterator iter = reader.query(ref, 0, 0, true);
 
             while(iter.hasNext()){
                 SAMRecord record = iter.next();
 
-                if(record.getReadPairedFlag() && record.getSecondOfPairFlag()){
+                if(!record.getReadUnmappedFlag()
+                        && record.getReadPairedFlag()
+                        && record.getSecondOfPairFlag()
+                        && !record.getMateUnmappedFlag()
+                        && record.getReferenceName().equals(record.getMateReferenceName())){
                     ReversedRead read = new ReversedRead(
                             record.getReadName(),
                             record.getReferenceName(),
                             record.getAlignmentStart()
                     );
 
-                    if(set.contains(read)){
+                    if(set.contains(read))
                         writer.addAlignment(record);
-                        paired++;
-                    }
                 }
             }
 
-            unpaired += set.size() - paired;
             set.clear(); // forwards and reversed reads must map to the same reference
 
             try{
