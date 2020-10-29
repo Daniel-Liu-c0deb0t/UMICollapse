@@ -32,7 +32,7 @@ public class DeduplicateSAM{
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric){
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
@@ -60,17 +60,21 @@ public class DeduplicateSAM{
             if(paired){
                 if(!record.getReadPairedFlag()){
                     unpaired++;
-                    continue;
+
+                    if(removeUnpaired)
+                        continue;
                 }
 
-                if(record.getMateUnmappedFlag()){
+                if(record.getReadPairedFlag() && record.getMateUnmappedFlag()){
                     unmapped++;
                     continue;
                 }
 
-                if(!record.getReferenceName().equals(record.getMateReferenceName())){
+                if(record.getReadPairedFlag() && !record.getReferenceName().equals(record.getMateReferenceName())){
                     chimeric++;
-                    continue;
+
+                    if(removeChimeric)
+                        continue;
                 }
             }
 
@@ -167,8 +171,8 @@ public class DeduplicateSAM{
         System.out.println("Number of removed unmapped reads\t" + unmapped);
 
         if(paired){
-            System.out.println("Number of removed unpaired reads\t" + unpaired);
-            System.out.println("Number of removed chimeric reads\t" + chimeric);
+            System.out.println("Number of unpaired reads\t" + unpaired);
+            System.out.println("Number of chimeric reads\t" + chimeric);
         }
 
         System.out.println("Number of unremoved reads\t" + readCount);
@@ -180,7 +184,7 @@ public class DeduplicateSAM{
 
     // trade off speed for lower memory usage
     // input should be sorted based on alignment for best results
-    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired){
+    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
         int totalReadCount = 0;
@@ -205,17 +209,21 @@ public class DeduplicateSAM{
             if(paired){
                 if(!record.getReadPairedFlag()){
                     unpaired++;
-                    continue;
+
+                    if(removeUnpaired)
+                        continue;
                 }
 
-                if(record.getMateUnmappedFlag()){
+                if(record.getReadPairedFlag() && record.getMateUnmappedFlag()){
                     unmapped++;
                     continue;
                 }
 
-                if(!record.getReferenceName().equals(record.getMateReferenceName())){
+                if(record.getReadPairedFlag() && !record.getReferenceName().equals(record.getMateReferenceName())){
                     chimeric++;
-                    continue;
+
+                    if(removeChimeric)
+                        continue;
                 }
             }
 
@@ -271,10 +279,11 @@ public class DeduplicateSAM{
             if(record.getReadUnmappedFlag()) // discard unmapped reads
                 continue;
 
-            if(paired && (!record.getReadPairedFlag() // discard unpaired
-                        || record.getSecondOfPairFlag() // ignore reversed reads
-                        || record.getMateUnmappedFlag() // discard unmapped reads
-                        || !record.getReferenceName().equals(record.getMateReferenceName()))){ // discard chimeric reads
+            if(paired && ((removeUnpaired && !record.getReadPairedFlag()) // discard unpaired
+                        || (record.getReadPairedFlag() && record.getSecondOfPairFlag()) // ignore reversed reads
+                        || (record.getReadPairedFlag() && record.getMateUnmappedFlag()) // discard unmapped reads
+                        || (removeChimeric && record.getReadPairedFlag()
+                            && !record.getReferenceName().equals(record.getMateReferenceName())))){ // discard chimeric reads
                 continue;
             }
 
@@ -355,8 +364,8 @@ public class DeduplicateSAM{
         System.out.println("Number of removed unmapped reads\t" + unmapped);
 
         if(paired){
-            System.out.println("Number of removed unpaired reads\t" + unpaired);
-            System.out.println("Number of removed chimeric reads\t" + chimeric);
+            System.out.println("Number of unpaired reads\t" + unpaired);
+            System.out.println("Number of chimeric reads\t" + chimeric);
         }
 
         System.out.println("Number of unremoved reads\t" + readCount);
@@ -417,6 +426,7 @@ public class DeduplicateSAM{
         }
     }
 
+    // heavily inspired by TwoPassPairWriter from UMI-tools
     private static class Writer{
         private boolean paired;
         private SAMFileWriter writer;
@@ -442,15 +452,17 @@ public class DeduplicateSAM{
                     ref = currRef;
 
                 if(!ref.equals(currRef)){
-                    writeReversed();
+                    writeReversed(false);
                     ref = currRef;
                 }
 
-                set.add(new ReversedRead(
-                        record.getReadName(),
-                        record.getMateReferenceName(),
-                        record.getMateAlignmentStart()
-                ));
+                if(record.getReadPairedFlag()){
+                    set.add(new ReversedRead(
+                            record.getReadName(),
+                            record.getMateReferenceName(),
+                            record.getMateAlignmentStart()
+                    ));
+                }
             }
 
             writer.addAlignment(record);
@@ -458,17 +470,22 @@ public class DeduplicateSAM{
 
         public void close(){
             if(paired)
-                writeReversed();
+                writeReversed(true);
 
             writer.close();
         }
 
-        private void writeReversed(){
+        private void writeReversed(boolean fullPass){
             if(ref == null)
                 return;
 
             SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-            SAMRecordIterator iter = reader.query(ref, 0, 0, true);
+            SAMRecordIterator iter = null;
+
+            if(fullPass)
+                iter = reader.iterator();
+            else
+                iter = reader.query(ref, 0, 0, true);
 
             while(iter.hasNext()){
                 SAMRecord record = iter.next();
@@ -476,20 +493,19 @@ public class DeduplicateSAM{
                 if(!record.getReadUnmappedFlag()
                         && record.getReadPairedFlag()
                         && record.getSecondOfPairFlag()
-                        && !record.getMateUnmappedFlag()
-                        && record.getReferenceName().equals(record.getMateReferenceName())){
+                        && !record.getMateUnmappedFlag()){
                     ReversedRead read = new ReversedRead(
                             record.getReadName(),
                             record.getReferenceName(),
                             record.getAlignmentStart()
                     );
 
-                    if(set.contains(read))
+                    if(set.contains(read)){
                         writer.addAlignment(record);
+                        set.remove(read);
+                    }
                 }
             }
-
-            set.clear(); // forwards and reversed reads must map to the same reference
 
             try{
                 reader.close();

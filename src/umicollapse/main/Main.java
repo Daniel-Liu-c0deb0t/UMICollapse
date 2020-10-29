@@ -86,6 +86,8 @@ public class Main{
         boolean twoPass = false;
 
         boolean paired = false;
+        boolean removeUnpaired = false;
+        boolean removeChimeric = false;
 
         String s = "-k";
 
@@ -162,6 +164,16 @@ public class Main{
         if(m.containsKey(s))
             paired = true;
 
+        s = "--remove-unpaired";
+
+        if(m.containsKey(s))
+            removeUnpaired = true;
+
+        s = "--remove-chimeric";
+
+        if(m.containsKey(s))
+            removeChimeric = true;
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;
@@ -182,9 +194,9 @@ public class Main{
             DeduplicateSAM dedup = new DeduplicateSAM();
 
             if(twoPass){
-                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired);
+                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric);
             }else{
-                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired);
+                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired, removeUnpaired, removeChimeric);
             }
         }
 

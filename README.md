@@ -48,7 +48,7 @@ Here is a hypothetical example with paired-end reads:
 ```
 This should be equivalent to the following with [UMI-tools](https://github.com/CGATOxford/UMI-tools):
 ```
-umi_tools dedup -I paired_example.bam -S dedup_paired_example.bam --umi-separator=: --paired --chimeric-pairs=discard --unpaired-reads=discard
+umi_tools dedup -I paired_example.bam -S dedup_paired_example.bam --umi-separator=: --paired
 ```
 
 ## Building
@@ -90,7 +90,9 @@ or running benchmarks:
 * `--merge`: method for identifying which UMI to keep out of every two UMIs. Either `any`, `avgqual`, or `mapqual`. Default: `mapqual` for SAM/BAM mode, `avgqual` for FASTQ mode.
 * `--data`: data structure used in deduplication. Either `naive`, `combo`, `ngram`, `delete`, `trie`, `bktree`, `sortbktree`, `ngrambktree`, `sortngrambktree`, or `fenwickbktree`. Default: `ngrambktree`.
 * `--two-pass`: use a separate two-pass algorithm for SAM/BAM deduplication. This may be slightly slower, but it should use much less memory if the reads are approximately sorted by alignment coordinate. Default: false.
-* `--paired`: use paired-end mode, which deduplicates pairs of reads. Currently removes chimeric alignments and unpaired reads. Default: false (single-end).
+* `--paired`: use paired-end mode, which deduplicates pairs of reads from a SAM/BAM file. This is very memory intensive. Default: false (single-end).
+* `--remove-unpaired`: remove unpaired reads during paired-end mode. Default: false.
+* `--remove-chimeric`: remove chimeric reads (pairs map to different references) during paired-end mode. Default: false.
 
 ## Java Virtual Machine Memory
 If you need more memory to process larger datasets, then modify the `umicollapse` file. `-Xms` represents the initial heap size, `-Xmx` represents the max heap size, and `-Xss` represents the stack size. If you do not know how much memory is needed, it may be a good idea to set a small initial heap size, and a very large max heap size, so the heap can grow when necessary. If memory usage is still is an issue, use the `--two-pass` option to save memory when the reads are approximately sorted (this is not a strict requirement, its just that when reads with the same alignment coordinate are close together in the file, they do not have to be kept in memory for very long).
