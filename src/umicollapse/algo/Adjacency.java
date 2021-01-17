@@ -10,11 +10,12 @@ import umicollapse.util.BitSet;
 import umicollapse.util.Read;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.UmiFreq;
+import umicollapse.util.ClusterTracker;
 import umicollapse.data.DataStructure;
 
 public class Adjacency implements Algorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, int umiLength, int k, float percentage){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, DataStructure data, ClusterTracker tracker, int umiLength, int k, float percentage){
         Map<BitSet, Integer> m = new HashMap<>();
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
@@ -31,7 +32,8 @@ public class Adjacency implements Algorithm{
 
         for(int i = 0; i < freq.length; i++){
             if(data.contains(freq[i].umi)){
-                data.removeNear(freq[i].umi, k, Integer.MAX_VALUE);
+                tracker.addAll(data.removeNear(freq[i].umi, k, Integer.MAX_VALUE), reads);
+                tracker.track(freq[i].umi);
                 res.add(freq[i].readFreq.read);
             }
         }

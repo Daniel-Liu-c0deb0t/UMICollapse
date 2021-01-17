@@ -13,11 +13,16 @@ import umicollapse.util.BitSet;
 import umicollapse.util.Read;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.UmiFreq;
+import umicollapse.util.ClusterTracker;
 import umicollapse.data.ParallelDataStructure;
 
 public class ParallelAdjacency implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, ClusterTracker tracker, int umiLength, int k, float percentage){
+        if(tracker.shouldTrack()){
+            throw new UnsupportedOperationException();
+        }
+
         Map<BitSet, Integer> m = new HashMap<>();
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();

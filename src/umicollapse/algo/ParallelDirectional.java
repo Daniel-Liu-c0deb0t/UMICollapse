@@ -14,10 +14,15 @@ import umicollapse.data.ParallelDataStructure;
 import umicollapse.util.Read;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.UmiFreq;
+import umicollapse.util.ClusterTracker;
 
 public class ParallelDirectional implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, ClusterTracker tracker, int umiLength, int k, float percentage){
+        if(tracker.shouldTrack()){
+            throw new UnsupportedOperationException();
+        }
+
         UmiFreq[] freq = new UmiFreq[reads.size()];
         List<Read> res = new ArrayList<>();
         Map<BitSet, Integer> m = new HashMap<>();

@@ -12,10 +12,15 @@ import umicollapse.util.BitSet;
 import umicollapse.data.ParallelDataStructure;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.Read;
+import umicollapse.util.ClusterTracker;
 
 public class ParallelConnectedComponents implements ParallelAlgorithm{
     @Override
-    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, int umiLength, int k, float percentage){
+    public List<Read> apply(Map<BitSet, ReadFreq> reads, ParallelDataStructure data, ClusterTracker tracker, int umiLength, int k, float percentage){
+        if(tracker.shouldTrack()){
+            throw new UnsupportedOperationException();
+        }
+
         Map<BitSet, Integer> m = new HashMap<>();
         BitSet[] idxToUMI = new BitSet[reads.size()];
 
