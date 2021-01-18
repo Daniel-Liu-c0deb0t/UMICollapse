@@ -49,6 +49,12 @@ public class SAMRead extends Read{
         return avgQual;
     }
 
+    @Override
+    public boolean equals(Object o){
+        SAMRead r = (SAMRead)o;
+        return record.equals(r.record);
+    }
+
     public int getMapQual(){
         return record.getMappingQuality();
     }

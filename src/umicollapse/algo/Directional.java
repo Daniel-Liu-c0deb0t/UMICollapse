@@ -34,7 +34,7 @@ public class Directional implements Algorithm{
         for(int i = 0; i < freq.length; i++){
             if(data.contains(freq[i].umi)){
                 visitAndRemove(freq[i].umi, reads, data, tracker, k, percentage);
-                tracker.track(freq[i].umi);
+                tracker.track(freq[i].umi, freq[i].readFreq.read);
                 res.add(freq[i].readFreq.read);
             }
         }
@@ -50,7 +50,7 @@ public class Directional implements Algorithm{
             if(u.equals(v))
                 continue;
 
-            visitAndRemove(v, reads, data, k, percentage);
+            visitAndRemove(v, reads, data, tracker, k, percentage);
         }
     }
 }

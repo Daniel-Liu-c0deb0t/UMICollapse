@@ -24,6 +24,7 @@ import umicollapse.merge.*;
 import umicollapse.util.Read;
 import umicollapse.util.SAMRead;
 import umicollapse.util.ReadFreq;
+import umicollapse.util.ClusterTracker;
 import static umicollapse.util.Utils.HASH_CONST;
 
 public class DeduplicateSAM{
@@ -32,7 +33,7 @@ public class DeduplicateSAM{
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean trackClusters){
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
@@ -151,9 +152,9 @@ public class DeduplicateSAM{
             }
 
             if(algo instanceof Algorithm)
-                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, umiLength, k, percentage);
+                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
             else
-                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, umiLength, k, percentage);
+                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
 
             synchronized(lock){
                 avgUMICount += e.getValue().size();
@@ -184,7 +185,7 @@ public class DeduplicateSAM{
 
     // trade off speed for lower memory usage
     // input should be sorted based on alignment for best results
-    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric){
+    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean trackClusters){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
         Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
         int totalReadCount = 0;
@@ -334,9 +335,9 @@ public class DeduplicateSAM{
                 }
 
                 if(algo instanceof Algorithm)
-                    deduped = ((Algorithm)algo).apply(alignReads.umiRead, (DataStructure)data, umiLength, k, percentage);
+                    deduped = ((Algorithm)algo).apply(alignReads.umiRead, (DataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
                 else
-                    deduped = ((ParallelAlgorithm)algo).apply(alignReads.umiRead, (ParallelDataStructure)data, umiLength, k, percentage);
+                    deduped = ((ParallelAlgorithm)algo).apply(alignReads.umiRead, (ParallelDataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
 
                 avgUMICount += alignReads.umiRead.size();
                 maxUMICount = Math.max(maxUMICount, alignReads.umiRead.size());

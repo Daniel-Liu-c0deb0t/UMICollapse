@@ -8,6 +8,7 @@ import umicollapse.util.BitSet;
 import umicollapse.util.Utils;
 import umicollapse.util.Read;
 import umicollapse.util.ReadFreq;
+import umicollapse.util.ClusterTracker;
 import umicollapse.algo.*;
 import umicollapse.data.*;
 
@@ -58,7 +59,7 @@ public class ParallelBenchmarkTime{
     private static long runTest(ParallelAlgorithm algo, ParallelDataStructure data, Map<BitSet, ReadFreq> umiFreq, int umiLength, int k, float percentage){
         long start = System.currentTimeMillis();
 
-        algo.apply(umiFreq, data, umiLength, k, percentage);
+        algo.apply(umiFreq, data, new ClusterTracker(false), umiLength, k, percentage);
 
         return System.currentTimeMillis() - start;
     }

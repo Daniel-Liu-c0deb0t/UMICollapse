@@ -33,7 +33,7 @@ public class Adjacency implements Algorithm{
         for(int i = 0; i < freq.length; i++){
             if(data.contains(freq[i].umi)){
                 tracker.addAll(data.removeNear(freq[i].umi, k, Integer.MAX_VALUE), reads);
-                tracker.track(freq[i].umi);
+                tracker.track(freq[i].umi, freq[i].readFreq.read);
                 res.add(freq[i].readFreq.read);
             }
         }

@@ -1,5 +1,7 @@
 package umicollapse.util;
 
+import java.util.Arrays;
+
 import htsjdk.samtools.fastq.FastqRecord;
 
 import static umicollapse.util.Utils.toBitSet;
@@ -51,6 +53,22 @@ public class FASTQRead extends Read{
     @Override
     public int getAvgQual(){
         return avgQual;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        FASTQRead r = (FASTQRead)o;
+
+        if(!seq.equals(r.seq))
+            return false;
+
+        if(!desc.equals(r.desc))
+            return false;
+
+        if(!Arrays.equals(qual, r.qual))
+            return false;
+
+        return true;
     }
 
     public FastqRecord toFASTQRecord(int length, int umiLength){

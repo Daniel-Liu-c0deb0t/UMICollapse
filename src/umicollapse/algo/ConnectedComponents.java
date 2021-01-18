@@ -27,7 +27,7 @@ public class ConnectedComponents implements Algorithm{
         for(BitSet umi : reads.keySet()){
             if(data.contains(umi)){
                 UmiFreq umiFreq = visitAndRemove(umi, reads, data, tracker, k);
-                tracker.track(umiFreq.umi);
+                tracker.track(umiFreq.umi, umiFreq.readFreq.read);
                 res.add(umiFreq.readFreq.read);
             }
         }
@@ -38,7 +38,7 @@ public class ConnectedComponents implements Algorithm{
     private UmiFreq visitAndRemove(BitSet u, Map<BitSet, ReadFreq> reads, DataStructure data, ClusterTracker tracker, int k){
         UmiFreq max = new UmiFreq(u, reads.get(u));
         Set<BitSet> c = data.removeNear(u, k, Integer.MAX_VALUE);
-        tracker.addAll(c);
+        tracker.addAll(c, reads);
 
         for(BitSet v : c){
             if(u.equals(v))

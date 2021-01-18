@@ -89,6 +89,8 @@ public class Main{
         boolean removeUnpaired = false;
         boolean removeChimeric = false;
 
+        boolean trackClusters = false;
+
         String s = "-k";
 
         if(m.containsKey(s))
@@ -174,6 +176,11 @@ public class Main{
         if(m.containsKey(s))
             removeChimeric = true;
 
+        s = "--tag";
+
+        if(m.containsKey(s))
+            trackClusters = true;
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;
@@ -189,14 +196,14 @@ public class Main{
 
         if(mode.equals("fastq")){
             DeduplicateFASTQ dedup = new DeduplicateFASTQ();
-            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign);
+            dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, trackClusters);
         }else if(mode.equals("bam") || mode.equals("sam")){
             DeduplicateSAM dedup = new DeduplicateSAM();
 
             if(twoPass){
-                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric);
+                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric, trackClusters);
             }else{
-                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired, removeUnpaired, removeChimeric);
+                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired, removeUnpaired, removeChimeric, trackClusters);
             }
         }
 

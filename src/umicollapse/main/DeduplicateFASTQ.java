@@ -20,13 +20,14 @@ import umicollapse.merge.*;
 import umicollapse.util.Read;
 import umicollapse.util.FASTQRead;
 import umicollapse.util.ReadFreq;
+import umicollapse.util.ClusterTracker;
 
 public class DeduplicateFASTQ{
     private int uniqueCount;
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, boolean trackClusters){
         umiLength = umiLengthParam;
 
         if(umiLength == -1)
@@ -70,6 +71,8 @@ public class DeduplicateFASTQ{
         FastqWriter writer = new FastqWriterFactory().newWriter(out);
         Object lock = new Object();
 
+        final Map<Integer, ClusterTracker> clusterTrackers = trackClusters ? new HashMap<Integer, ClusterTracker>() : null;
+
         Stream<Map.Entry<Integer, Map<BitSet, ReadFreq>>> stream = parallel ?
             readLength.entrySet().parallelStream() : readLength.entrySet().stream();
 
@@ -83,19 +86,66 @@ public class DeduplicateFASTQ{
                 ex.printStackTrace();
             }
 
+            ClusterTracker currTracker = new ClusterTracker(trackClusters);
+
             if(algo instanceof Algorithm)
-                deduped = ((Algorithm)algo).apply(e.getValue(), ((DataStructure)data), e.getKey(), k, percentage);
+                deduped = ((Algorithm)algo).apply(e.getValue(), ((DataStructure)data), currTracker, e.getKey(), k, percentage);
             else
-                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), ((ParallelDataStructure)data), e.getKey(), k, percentage);
+                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), ((ParallelDataStructure)data), currTracker, e.getKey(), k, percentage);
 
             synchronized(lock){
+                currTracker.setOffset(dedupedCount);
+
                 uniqueCount += e.getValue().size();
                 dedupedCount += deduped.size();
 
-                for(Read read : deduped)
-                    writer.write(((FASTQRead)read).toFASTQRecord(e.getKey(), umiLength));
+                if(trackClusters){
+                    clusterTrackers.put(e.getKey(), currTracker);
+                }else{
+                    for(Read read : deduped)
+                        writer.write(((FASTQRead)read).toFASTQRecord(e.getKey(), umiLength));
+                }
             }
         });
+
+        // second pass to tag reads with their cluster and other stats
+        if(trackClusters){
+            FastqReader reader2 = new FastqReader(in);
+
+            for(FastqRecord record : reader2){
+                int length = record.getReadLength();
+
+                ClusterTracker currTracker = clusterTrackers.get(length);
+                Map<BitSet, ReadFreq> map = readLength.get(length);
+
+                Read read = new FASTQRead(record.getReadName(), record.getReadString(), record.getBaseQualityString());
+                BitSet umi = read.getUMI();
+
+                int id = currTracker.getId(umi);
+                ClusterTracker.ClusterStats stats = currTracker.getStats(id);
+                int absId = id + currTracker.getOffset();
+                StringBuffer b = new StringBuffer(record.getReadName());
+                ReadFreq readFreq = map.get(umi);
+
+                b.append(" cluster_id=");
+                b.append(absId);
+
+                if(stats.getUMI().equals(umi) && stats.getRead().equals(read)){
+                    b.append(" cluster_size=");
+                    b.append(stats.getFreq());
+                    b.append(" same_umi=");
+                    b.append(readFreq.freq);
+                }else if(readFreq.read.equals(read)){
+                    b.append(" same_umi=");
+                    b.append(readFreq.freq);
+                }
+
+                FastqRecord record2 = new FastqRecord(b.toString(), record.getReadString(), record.getBaseQualityHeader(), record.getBaseQualityString());
+                writer.write(record2);
+            }
+
+            reader2.close();
+        }
 
         writer.close();
 
