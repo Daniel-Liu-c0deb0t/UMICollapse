@@ -181,6 +181,12 @@ public class Main{
         if(m.containsKey(s))
             trackClusters = true;
 
+        if(trackClusters && twoPass)
+            throw new UnsupportedOperationException("Cannot track clusters with the two pass algorithm!");
+
+        if(paired && parallelAlign)
+            throw new UnsupportedOperationException("Cannot process paired-end reads in parallel!");
+
         Algo a = null;
         Class<? extends Data> d = null;
         Merge mAlgo = null;

@@ -62,6 +62,8 @@ public class DeduplicateFASTQ{
 
         reader.close();
 
+        reader = null;
+
         System.gc(); // attempt to clear up memory before deduplicating
 
         System.out.println("Done reading input file into memory!");
@@ -110,6 +112,10 @@ public class DeduplicateFASTQ{
 
         // second pass to tag reads with their cluster and other stats
         if(trackClusters){
+            System.gc(); // attempt to clear up memory before second pass
+
+            System.out.println("Done with the first pass for tracking clusters!");
+
             FastqReader reader2 = new FastqReader(in);
 
             for(FastqRecord record : reader2){
@@ -140,7 +146,7 @@ public class DeduplicateFASTQ{
                     b.append(readFreq.freq);
                 }
 
-                FastqRecord record2 = new FastqRecord(b.toString(), record.getReadString(), record.getBaseQualityHeader(), record.getBaseQualityString());
+                FastqRecord record2 = new FastqRecord(b.toString(), record.getReadString().substring(umiLength), record.getBaseQualityHeader(), record.getBaseQualityString().substring(umiLength));
                 writer.write(record2);
             }
 
@@ -151,6 +157,10 @@ public class DeduplicateFASTQ{
 
         System.out.println("Number of input reads\t" + readCount);
         System.out.println("Number of unique reads\t" + uniqueCount);
-        System.out.println("Number of reads after deduplicating\t" + dedupedCount);
+
+        if(trackClusters)
+            System.out.println("Number of groups of reads\t" + dedupedCount);
+        else
+            System.out.println("Number of reads after deduplicating\t" + dedupedCount);
     }
 }

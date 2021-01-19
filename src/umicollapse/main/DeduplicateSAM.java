@@ -25,6 +25,7 @@ import umicollapse.util.Read;
 import umicollapse.util.SAMRead;
 import umicollapse.util.ReadFreq;
 import umicollapse.util.ClusterTracker;
+import umicollapse.util.Utils;
 import static umicollapse.util.Utils.HASH_CONST;
 
 public class DeduplicateSAM{
@@ -138,8 +139,10 @@ public class DeduplicateSAM{
         dedupedCount = 0;
         Object lock = new Object();
 
+        final Map<Alignment, ClusterTracker> clusterTrackers = trackClusters ? new HashMap<Alignment, ClusterTracker>() : null;
+
         Stream<Map.Entry<Alignment, Map<BitSet, ReadFreq>>> stream =
-            parallel ? align.entrySet().parallelStream() : align.entrySet().stream();
+            parallel ? align.entrySet().parallelStream() : (paired ? align.entrySet().stream().sorted((a, b) -> a.getKey().getRef().compareTo(b.getKey().getRef())) : align.entrySet().stream());
 
         stream.forEach(e -> {
             List<Read> deduped;
@@ -151,20 +154,100 @@ public class DeduplicateSAM{
                 ex.printStackTrace();
             }
 
+            ClusterTracker currTracker = new ClusterTracker(trackClusters);
+
             if(algo instanceof Algorithm)
-                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
+                deduped = ((Algorithm)algo).apply(e.getValue(), (DataStructure)data, currTracker, umiLength, k, percentage);
             else
-                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, new ClusterTracker(trackClusters), umiLength, k, percentage);
+                deduped = ((ParallelAlgorithm)algo).apply(e.getValue(), (ParallelDataStructure)data, currTracker, umiLength, k, percentage);
 
             synchronized(lock){
+                currTracker.setOffset(dedupedCount);
+
                 avgUMICount += e.getValue().size();
                 maxUMICount = Math.max(maxUMICount, e.getValue().size());
                 dedupedCount += deduped.size();
 
-                for(Read read : deduped)
-                    writer.write(((SAMRead)read).toSAMRecord());
+                if(trackClusters){
+                    clusterTrackers.put(e.getKey(), currTracker);
+                }else{
+                    for(Read read : deduped)
+                        writer.write(((SAMRead)read).toSAMRecord());
+                }
             }
         });
+
+        // second pass to tag reads with their cluster and other stats
+        if(trackClusters){
+            System.gc(); // attempt to clear up memory before second pass
+
+            System.out.println("Done with the first pass for tracking clusters!");
+
+            SamReader reader2 = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+
+            for(SAMRecord record : reader2){
+                if(record.getReadUnmappedFlag()) // discard unmapped reads
+                    continue;
+
+                if(paired && ((removeUnpaired && !record.getReadPairedFlag()) // discard unpaired
+                            || (record.getReadPairedFlag() && record.getSecondOfPairFlag()) // ignore reversed reads
+                            || (record.getReadPairedFlag() && record.getMateUnmappedFlag()) // discard unmapped reads
+                            || (removeChimeric && record.getReadPairedFlag()
+                                && !record.getReferenceName().equals(record.getMateReferenceName())))){ // discard chimeric reads
+                    continue;
+                }
+
+                Alignment alignment = null;
+
+                if(paired){
+                    alignment = new PairedAlignment(
+                            record.getReadNegativeStrandFlag(),
+                            record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                            record.getReferenceName(),
+                            record.getInferredInsertSize()
+                    );
+                }else{
+                    alignment = new Alignment(
+                            record.getReadNegativeStrandFlag(),
+                            record.getReadNegativeStrandFlag() ? record.getUnclippedEnd() : record.getUnclippedStart(),
+                            record.getReferenceName()
+                    );
+                }
+
+                ClusterTracker currTracker = clusterTrackers.get(alignment);
+                Map<BitSet, ReadFreq> map = align.get(alignment);
+
+                Read read = new SAMRead(record);
+                BitSet umi = read.getUMI();
+
+                int id = currTracker.getId(umi);
+                ClusterTracker.ClusterStats stats = currTracker.getStats(id);
+                int absId = id + currTracker.getOffset();
+                SAMRecord record2 = record.deepCopy();
+                ReadFreq readFreq = map.get(umi);
+
+                record2.setAttribute("MI", absId + "");
+                record2.setAttribute("RX", Utils.toString(stats.getUMI(), umiLength));
+
+                if(stats.getUMI().equals(umi) && stats.getRead().equals(read)){
+                    record2.setAttribute("cs", stats.getFreq());
+                    record2.setAttribute("su", readFreq.freq);
+                }else{
+                    record2.setDuplicateReadFlag(true);
+
+                    if(readFreq.read.equals(read))
+                        record2.setAttribute("su", readFreq.freq);
+                }
+
+                writer.write(record2);
+            }
+
+            try{
+                reader2.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
 
         writer.close();
 
@@ -180,7 +263,11 @@ public class DeduplicateSAM{
         System.out.println("Number of unique alignment positions\t" + alignPosCount);
         System.out.println("Average number of UMIs per alignment position\t" + ((double)avgUMICount / alignPosCount));
         System.out.println("Max number of UMIs over all alignment positions\t" + maxUMICount);
-        System.out.println("Number of reads after deduplicating\t" + dedupedCount);
+
+        if(trackClusters)
+            System.out.println("Number of groups of reads\t" + dedupedCount);
+        else
+            System.out.println("Number of reads after deduplicating\t" + dedupedCount);
     }
 
     // trade off speed for lower memory usage
@@ -577,6 +664,10 @@ public class DeduplicateSAM{
             this.strand = strand;
             this.coord = coord;
             this.ref = ref.intern();
+        }
+
+        public String getRef(){
+            return ref;
         }
 
         @Override
