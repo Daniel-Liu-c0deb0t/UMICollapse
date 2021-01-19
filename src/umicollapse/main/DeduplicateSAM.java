@@ -142,7 +142,7 @@ public class DeduplicateSAM{
         final Map<Alignment, ClusterTracker> clusterTrackers = trackClusters ? new HashMap<Alignment, ClusterTracker>() : null;
 
         Stream<Map.Entry<Alignment, Map<BitSet, ReadFreq>>> stream =
-            parallel ? align.entrySet().parallelStream() : (paired ? align.entrySet().stream().sorted((a, b) -> a.getKey().getRef().compareTo(b.getKey().getRef())) : align.entrySet().stream());
+            parallel ? align.entrySet().parallelStream() : ((paired && !trackClusters) ? align.entrySet().stream().sorted((a, b) -> a.getKey().getRef().compareTo(b.getKey().getRef())) : align.entrySet().stream());
 
         stream.forEach(e -> {
             List<Read> deduped;
