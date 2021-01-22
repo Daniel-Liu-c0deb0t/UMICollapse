@@ -30,6 +30,7 @@ public class BitSet implements Comparable{
         return (bits[idx / CHUNK_SIZE] & (1L << (idx % CHUNK_SIZE))) != 0L;
     }
 
+    // does not set the nBits array, so distance calculations could be wrong if not careful!
     public void set(int idx, boolean bit){
         recalcHash = true;
         int i = idx / CHUNK_SIZE;
