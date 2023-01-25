@@ -88,6 +88,7 @@ public class Main{
         boolean paired = false;
         boolean removeUnpaired = false;
         boolean removeChimeric = false;
+        boolean keepUnmapped = false;
 
         boolean trackClusters = false;
 
@@ -176,6 +177,11 @@ public class Main{
         if(m.containsKey(s))
             removeChimeric = true;
 
+        s = "--keep-unmapped";
+
+        if(m.containsKey(s))
+            keepUnmapped = true;
+
         s = "--tag";
 
         if(m.containsKey(s))
@@ -186,6 +192,9 @@ public class Main{
 
         if(paired && parallelAlign)
             throw new UnsupportedOperationException("Cannot process paired-end reads in parallel!");
+
+        if(paired && keepUnmapped)
+            throw new UnsupportedOperationException("Cannot keep unmapped reads with paired-end reads!");
 
         Algo a = null;
         Class<? extends Data> d = null;
@@ -207,9 +216,9 @@ public class Main{
             DeduplicateSAM dedup = new DeduplicateSAM();
 
             if(twoPass){
-                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric, trackClusters);
+                dedup.deduplicateAndMergeTwoPass(in, out, a, d, mAlgo, umiLength, k, percentage, umiSeparator, paired, removeUnpaired, removeChimeric, keepUnmapped, trackClusters);
             }else{
-                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired, removeUnpaired, removeChimeric, trackClusters);
+                dedup.deduplicateAndMerge(in, out, a, d, mAlgo, umiLength, k, percentage, parallelAlign, umiSeparator, paired, removeUnpaired, removeChimeric, keepUnmapped, trackClusters);
             }
         }
 

@@ -34,10 +34,11 @@ public class DeduplicateSAM{
     private int dedupedCount;
     private int umiLength;
 
-    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean trackClusters){
+    public void deduplicateAndMerge(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, boolean parallel, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean keepUnmapped, boolean trackClusters){
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+        Writer writer = new Writer(in, out, reader, paired);
         Map<Alignment, Map<BitSet, ReadFreq>> align = new HashMap<>(1 << 16);
 
         umiLength = umiLengthParam;
@@ -56,6 +57,8 @@ public class DeduplicateSAM{
 
             if(record.getReadUnmappedFlag()){ // discard unmapped reads
                 unmapped++;
+                if(keepUnmapped)
+                    writer.write(record);
                 continue;
             }
 
@@ -118,8 +121,6 @@ public class DeduplicateSAM{
 
             readCount++;
         }
-
-        Writer writer = new Writer(in, out, reader, paired);
 
         try{
             reader.close();
@@ -272,8 +273,9 @@ public class DeduplicateSAM{
 
     // trade off speed for lower memory usage
     // input should be sorted based on alignment for best results
-    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean trackClusters){
+    public void deduplicateAndMergeTwoPass(File in, File out, Algo algo, Class<? extends Data> dataClass, Merge merge, int umiLengthParam, int k, float percentage, String umiSeparator, boolean paired, boolean removeUnpaired, boolean removeChimeric, boolean keepUnmapped, boolean trackClusters){
         SamReader firstPass = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
+        Writer writer = new Writer(in, out, firstPass, paired);
         Map<Alignment, AlignReads> align = new HashMap<>(1 << 16);
         int totalReadCount = 0;
         int unmapped = 0;
@@ -291,6 +293,8 @@ public class DeduplicateSAM{
 
             if(record.getReadUnmappedFlag()){ // discard unmapped reads
                 unmapped++;
+                if(keepUnmapped)
+                    writer.write(record);
                 continue;
             }
 
@@ -354,7 +358,6 @@ public class DeduplicateSAM{
         SAMRead.setDefaultUMIPattern(umiSeparator);
 
         SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(in);
-        Writer writer = new Writer(in, out, reader, paired);
 
         umiLength = umiLengthParam;
         int idx = 0;
