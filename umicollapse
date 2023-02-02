@@ -1,1 +1,1 @@
-java -server -Xms8G -Xmx8G -Xss20M -jar umicollapse.jar $@
+java -server -Xms12G -Xmx15G -Xss20M -jar umicollapse.jar $@
