@@ -16,7 +16,14 @@ The preprint paper is available **[here](https://www.biorxiv.org/content/10.1101
 ```
 
 ## Installation
-First, clone this repository:
+UMICollapse can be installed using `conda`:
+```
+conda install -c bioconda umicollapse
+```
+It is also available as a `nf-core` [module](https://nf-co.re/modules/umicollapse).
+(Thanks to @CharlotteAnne!)
+
+Alternatively, you can clone this repository:
 ```
 git clone https://github.com/Daniel-Liu-c0deb0t/UMICollapse.git
 cd UMICollapse
