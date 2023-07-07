@@ -21,7 +21,7 @@ UMICollapse can be installed using `conda`:
 conda install -c bioconda umicollapse
 ```
 It is also available as a `nf-core` [module](https://nf-co.re/modules/umicollapse).
-(Thanks to @CharlotteAnne!)
+(Thanks to [@CharlotteAnne](https://github.com/CharlotteAnne)!)
 
 Alternatively, you can clone this repository:
 ```
