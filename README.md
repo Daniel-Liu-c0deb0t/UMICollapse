@@ -99,13 +99,13 @@ or running benchmarks:
 ## Command-Line Arguments
 ### Mode (appears before commands)
 * `sam` or `bam`: the input is an aligned SAM/BAM file with the UMIs in the read headers. This separately deduplicates each alignment coordinate. Unmapped reads are removed.
-* `fastq`: the input is a FASTQ file. This deduplicates the entire FASTQ file based on each entire read sequence. Note that the "UMI" would be the entire read sequence.
+* `fastq`: the input is a FASTQ file. This deduplicates the entire FASTQ file based on each entire read sequence. In other words, the entire read sequence is treated as the "UMI".
 
 ### Commands
 * `-i`: input file. Required.
 * `-o`: output file. Required.
 * `-k`: number of substitution edits to allow. Default: 1.
-* `-u`: the UMI length. If set to a length in `fastq` mode, then trims the prefix of each read (the UMI is still the entire read sequence though). Default: autodetect.
+* `-u`: the UMI length. If set to a length in `fastq` mode, then trims the prefix of each read (note: does not affect the sequence used for deduplicating). Default: autodetect.
 * `-p`: threshold percentage for identifying adjacent UMIs in the directional algorithm. Default: 0.5.
 * `-t`: parallelize the deduplication of each separate alignment position. Using this is discouraged as it is lacking many features. Default: false.
 * `-T`: parallelize the deduplication of one single alignment position. The data structure can only be `naive`, `bktree`, and `fenwickbktree`. Using this is discouraged as it is lacking many features. Default: false.

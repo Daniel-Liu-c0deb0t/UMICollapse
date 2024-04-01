@@ -28,6 +28,6 @@ public abstract class Read{
     }
 
     public abstract int getAvgQual();
-    public abstract BitSet getUMI();
+    public abstract BitSet getUMI(int maxLength);
     public abstract int getUMILength();
 }

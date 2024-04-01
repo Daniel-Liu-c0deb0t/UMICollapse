@@ -41,7 +41,7 @@ public class FASTQRead extends Read{
     }
 
     @Override
-    public BitSet getUMI(){
+    public BitSet getUMI(int maxLength){
         return seq;
     }
 

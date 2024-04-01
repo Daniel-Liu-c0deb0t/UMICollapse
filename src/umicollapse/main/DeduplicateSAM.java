@@ -106,7 +106,7 @@ public class DeduplicateSAM{
             Map<BitSet, ReadFreq> umiRead = align.get(alignment);
 
             Read read = new SAMRead(record);
-            BitSet umi = read.getUMI();
+            BitSet umi = read.getUMI(umiLength);
 
             if(umiLength == -1)
                 umiLength = read.getUMILength();
@@ -219,7 +219,7 @@ public class DeduplicateSAM{
                 Map<BitSet, ReadFreq> map = align.get(alignment);
 
                 Read read = new SAMRead(record);
-                BitSet umi = read.getUMI();
+                BitSet umi = read.getUMI(umiLength);
 
                 int id = currTracker.getId(umi);
                 ClusterTracker.ClusterStats stats = currTracker.getStats(id);
@@ -401,7 +401,7 @@ public class DeduplicateSAM{
                 alignReads.umiRead = new HashMap<BitSet, ReadFreq>(4);
 
             Read read = new SAMRead(record);
-            BitSet umi = read.getUMI();
+            BitSet umi = read.getUMI(umiLength);
 
             if(umiLength == -1)
                 umiLength = read.getUMILength();

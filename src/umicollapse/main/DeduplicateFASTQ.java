@@ -47,7 +47,7 @@ public class DeduplicateFASTQ{
             Map<BitSet, ReadFreq> umiRead = readLength.get(length);
 
             Read read = new FASTQRead(record.getReadName(), record.getReadString(), record.getBaseQualityString());
-            BitSet umi = read.getUMI();
+            BitSet umi = read.getUMI(-1);
 
             if(umiRead.containsKey(umi)){
                 ReadFreq prev = umiRead.get(umi);
@@ -125,7 +125,7 @@ public class DeduplicateFASTQ{
                 Map<BitSet, ReadFreq> map = readLength.get(length);
 
                 Read read = new FASTQRead(record.getReadName(), record.getReadString(), record.getBaseQualityString());
-                BitSet umi = read.getUMI();
+                BitSet umi = read.getUMI(-1);
 
                 int id = currTracker.getId(umi);
                 ClusterTracker.ClusterStats stats = currTracker.getStats(id);

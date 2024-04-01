@@ -30,10 +30,12 @@ public class SAMRead extends Read{
     }
 
     @Override
-    public BitSet getUMI(){
+    public BitSet getUMI(int maxLength){
         Matcher m = defaultUMIPattern.matcher(record.getReadName());
         m.find();
         String umi = m.group(2);
+        if(maxLength >= 0 && umi.length() > maxLength)
+            umi = umi.substring(0, maxLength);
         return Utils.toBitSet(umi.toUpperCase());
     }
 
